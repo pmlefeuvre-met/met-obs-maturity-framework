@@ -1,0 +1,203 @@
+id: FA3
+title: Network & Metadata Management
+description: Site management, metadata stewardship and network design/lifecycle planning.
+sub_domains:
+- name: Site Management
+  sequence: 10
+  chain_stage: Siting, Exposure, and Environmental Classification
+  levels:
+  - score: 0
+    label: Absent / Non-compliant
+    criteria:
+    - Siting requirements are not formally defined
+    - Site inspections are not systematically performed
+    - Site exposure conditions are poorly documented
+    - Site changes are not controlled or recorded
+    - Risks to representativeness and continuity are unmanaged
+    standards_ref:
+    - WMO-No.8
+    - WIGOS Manual
+    - GCOS
+  - score: 1
+    label: Basic / Ad hoc
+    criteria:
+    - WMO siting guidance is considered inconsistently
+    - Site inspections occur but frequency and scope vary
+    - Environmental changes are identified informally
+    - Site metadata are incomplete
+    - Site impacts on observations are assessed inconsistently
+    standards_ref:
+    - WMO-No.8
+    - GCOS
+  - score: 2
+    label: Structured / Partially Compliant
+    criteria:
+    - Siting criteria are documented and routinely applied
+    - Site inspections follow documented procedures
+    - Site metadata support classification and representativeness assessments
+    - Site changes are tracked and controlled
+    - Risks to site integrity are documented and managed
+    - Site classification is periodically reviewed
+    standards_ref:
+    - WMO-No.8 Annex 1.D
+    - WIGOS Metadata Standard
+  - score: 3
+    label: Compliant (Best Practice)
+    criteria:
+    - Site selection and management are aligned with WMO siting guidance and application requirements
+    - Site inspections are periodic and triggered by operational or environmental change
+    - Site classification, representativeness and exposure are routinely assessed
+    - Site changes are evaluated for impacts on continuity and homogeneity
+    - Environmental changes are documented and managed
+    - Site status and classification are communicated to users and stakeholders
+    - Risks to long-term site integrity are actively managed
+    standards_ref:
+    - WMO-No.8 Annex 1.D
+    - WIGOS Metadata Standard
+    - GCOS
+  - score: 4
+    label: Optimized / Continual Improvement
+    criteria:
+    - Site management is integrated into network strategy and climate stewardship activities
+    - Site classification is periodically re-evaluated using evolving guidance and metadata
+    - Land-use, vegetation and infrastructure changes are proactively monitored
+    - Site improvement opportunities are systematically identified and implemented
+    - Inspection findings drive continual improvement
+    - Site management supports long-term continuity and homogeneity
+    - Lessons learned are incorporated into future siting decisions
+    standards_ref:
+    - WMO-No.8
+    - WIGOS Manual
+    - GCOS
+- name: Metadata and Data Stewardship
+  sequence: 11
+  chain_stage: Metadata Lifecycle and System Synchronization
+  levels:
+  - score: 0
+    label: Absent / Non-compliant
+    criteria:
+    - Metadata are incomplete or inconsistent
+    - Observations cannot be reliably linked to stations or instruments
+    - Metadata changes are not controlled
+    - Data preservation arrangements are inadequate
+    - Reprocessing is not supported
+    standards_ref:
+    - WIGOS Metadata Standard
+    - GCOS
+  - score: 1
+    label: Basic / Ad hoc
+    criteria:
+    - Core metadata are maintained for some networks
+    - Metadata updates rely on local practices
+    - Traceability is incomplete
+    - Archiving practices vary
+    - Metadata quality is not routinely reviewed
+    standards_ref:
+    - WIGOS Metadata Standard
+  - score: 2
+    label: Structured / Partially Compliant
+    criteria:
+    - Metadata standards and procedures are documented
+    - Observations are linked to station and instrument metadata
+    - Metadata changes are versioned and auditable
+    - Data and metadata are archived for future use
+    - Metadata support operational interpretation and traceability
+    - OSCAR updates are managed through defined processes where applicable
+    standards_ref:
+    - WIGOS Metadata Standard
+    - WIGOS Manual
+  - score: 3
+    label: Compliant (Best Practice)
+    criteria:
+    - Metadata management is aligned with the WIGOS Metadata Standard
+    - Metadata records are maintained, quality controlled and disseminated
+    - Changes to instrumentation, location and observing practices are formally controlled
+    - Metadata support traceability, reproducibility and impact assessment
+    - Data and metadata preservation support future reprocessing
+    - Metadata are used to assess continuity and homogeneity impacts
+    - OSCAR/Surface reporting is managed through controlled processes
+    standards_ref:
+    - WIGOS Metadata Standard
+    - WIGOS Manual
+    - GCOS
+  - score: 4
+    label: Optimized / Continual Improvement
+    criteria:
+    - Metadata stewardship is integrated with network management and quality management
+    - Metadata quality and completeness are routinely measured and improved
+    - Metadata support advanced continuity and homogeneity assessments
+    - Preservation strategies support long-term scientific value
+    - Governance evolves with standards and user needs
+    - Metadata drive continual improvement activities
+    - Long-term stewardship objectives are actively managed
+    standards_ref:
+    - WIGOS Metadata Standard
+    - WIGOS Manual
+    - GCOS
+    - ISO 9001
+- name: Network Design and Lifecycle
+  sequence: 12
+  chain_stage: Network Design and Strategic Lifecycle Planning
+  levels:
+  - score: 0
+    label: Absent / Non-compliant
+    criteria:
+    - Network design principles are undocumented
+    - Spatial and temporal requirements are not assessed
+    - Network objectives are unclear
+    - Network changes occur without structured assessment
+    - User requirements are not considered
+    standards_ref:
+    - WIGOS Manual
+    - GCOS
+  - score: 1
+    label: Basic / Ad hoc
+    criteria:
+    - Network design relies mainly on historical practices
+    - User needs are considered inconsistently
+    - Network changes are assessed case by case
+    - Documentation of design decisions is limited
+    - Observing requirements are not routinely reviewed
+    standards_ref:
+    - WIGOS Manual
+  - score: 2
+    label: Structured / Partially Compliant
+    criteria:
+    - Network design principles are documented
+    - Spatial and temporal requirements are assessed
+    - Network roles and observing purposes are documented
+    - Network changes are evaluated before implementation
+    - User requirements are periodically reviewed
+    - Gap analyses support network planning
+    standards_ref:
+    - WIGOS Manual
+    - Rolling Review of Requirements
+  - score: 3
+    label: Compliant (Best Practice)
+    criteria:
+    - Network design and lifecycle management align with WMO and WIGOS requirements
+    - Spatial and temporal sampling supports intended applications
+    - Network objectives and observing requirements are periodically reviewed
+    - Network evolution decisions consider continuity, representativeness and service impacts
+    - Gap analyses and Statements of Guidance inform planning
+    - Stakeholder requirements are incorporated into network decisions
+    - Network changes are documented and communicated
+    standards_ref:
+    - WIGOS Manual
+    - Rolling Review of Requirements
+    - GCOS
+  - score: 4
+    label: Optimized / Continual Improvement
+    criteria:
+    - Network strategy is continuously refined using performance monitoring and user needs
+    - Network evolution is supported by structured risk and scenario analysis
+    - Gap analyses drive long-term investment planning
+    - Observing requirements are reviewed against evolving applications and standards
+    - Network lifecycle management supports resilience and sustainability
+    - Strategic decisions balance continuity, coverage and future needs
+    - Continuous improvement is embedded in network governance
+    standards_ref:
+    - WIGOS Manual
+    - Rolling Review of Requirements
+    - Statement of Guidance
+    - GCOS

@@ -1,0 +1,450 @@
+id: FA1
+title: Instrument Lifecycle & Maintenance
+description: Calibration, procurement, lifecycle management and staff competence for observing instruments.
+sub_domains:
+- name: Calibration and Traceability
+  sequence: 1
+  chain_stage: Physical and Metrological Foundation
+  levels:
+  - score: 0
+    label: Absent / Non-compliant
+    criteria:
+    - No documented calibration programme, calibration schedule or calibration intervals are defined
+    - Metrological traceability to reference standards, national standards or accredited laboratories
+      cannot be demonstrated
+    - Calibration records, certificates and calibration histories are incomplete, unavailable or not retained
+    - Measurement uncertainty is not evaluated for calibration activities or sensor types
+    - As-found calibration, functional testing and field verification are not performed systematically
+    - Sensor drift, bias or long-term calibration trends are not monitored or reviewed
+    standards_ref:
+    - WMO-No. 8, Volume I, Chapter 1.5 and 1.6
+    - WMO-No. 8, Volume V, Quality Management
+    - ISO/IEC 17025:2017, Clauses 6.5 and 7.6
+    - ISO 9001:2015, Clause 7.1.5
+  - score: 1
+    label: Basic / Ad hoc
+    criteria:
+    - Calibration intervals are based mainly on manufacturer recommendations or local expert judgement
+    - Calibration activities are tracked manually or reactively, with inconsistent control of overdue
+      calibrations
+    - Traceability is partially understood but not consistently documented or reviewed
+    - Calibration certificates are retained for some instruments but are not systematically assessed for
+      fitness-for-purpose
+    - As-found calibration and post-maintenance verification are performed only for selected cases
+    - Field checks or functional tests occur occasionally but are not governed by standard procedures
+    standards_ref:
+    - WMO-No. 8, Volume I, Chapter 1.5 and 1.6
+    - WMO-No. 8, Volume V, Quality Assurance
+    - ISO 9001:2015, Clause 7.1.5
+  - score: 2
+    label: Structured / Partially Compliant
+    criteria:
+    - Calibration intervals are documented for major sensor types and maintained in a calibration or asset
+      system
+    - Calibration schedules are monitored and calibration records are retained for critical operational
+      instruments
+    - Traceability is documented through reference standards, secondary standards or accredited external
+      providers
+    - Calibration certificates are reviewed and retained, including relevant calibration conditions and
+      results
+    - Basic uncertainty estimates or uncertainty budgets exist for selected sensor types or calibration
+      procedures
+    - Field verification and functional testing procedures are implemented for selected instruments or
+      station visits
+    - Calibration history is available for critical sensors and used to identify major outliers or recurring
+      issues
+    standards_ref:
+    - WMO-No. 8, Volume I, Chapter 1.5 and 1.6
+    - WMO-No. 8, Volume III, Section 1.7.2
+    - WMO-No. 8, Volume V
+    - ISO/IEC 17025:2017, Clauses 6.5, 7.6 and 7.7
+  - score: 3
+    label: Compliant (Best Practice)
+    criteria:
+    - Calibration intervals are justified using manufacturer guidance, operational experience, historical
+      performance and risk considerations
+    - Calibration status is managed through a controlled asset or calibration management process with
+      high on-time completion
+    - SI traceability is demonstrated through accredited laboratories, recognized reference standards
+      or documented traceability chains
+    - As-found calibration is systematically performed before adjustment or correction where needed to
+      support data quality assessment
+    - Uncertainty budgets are maintained for relevant calibration procedures and reviewed when methods
+      or equipment change
+    - Calibration drift, bias and historical performance are reviewed for critical sensors and sensor
+      categories
+    - Field verification, functional testing and data logger verification are documented and consistently
+      applied as part of operational control
+    standards_ref:
+    - WMO-No. 8, Volume I, Chapter 1.5, 1.6 and Annex 1.B
+    - WMO-No. 8, Volume III, Section 1.7.2
+    - WMO-No. 8, Volume V, Quality Management
+    - ISO/IEC 17025:2017, Clauses 6.5, 6.6, 7.6 and 7.7
+    - ISO 9001:2015, Clauses 8, 9 and 10
+  - score: 4
+    label: Optimized / Continual Improvement
+    criteria:
+    - Calibration strategy is actively optimized using sensor drift analysis, operational performance,
+      internal research and calibration history
+    - Calibration intervals are adjusted using objective evidence while maintaining traceability and observation
+      quality requirements
+    - Network-wide calibration performance indicators are monitored and reviewed to identify systematic
+      risks or improvement needs
+    - Long-term drift and bias analysis is performed at instrument, station and network level where relevant
+    - Field verification data are used to detect gradual sensor degradation and inform maintenance, calibration
+      and replacement decisions
+    - Uncertainty budgets and calibration methods are periodically validated and improved using new evidence
+      or intercomparison results
+    - Calibration outcomes are integrated into lifecycle management, procurement, maintenance and continual
+      improvement processes
+    standards_ref:
+    - WMO-No. 8, Volume I, Annex 1.B
+    - WMO-No. 8, Volume V, Quality Management and Continuous Improvement
+    - Manual on WIGOS (WMO-No. 1160)
+    - GCOS Climate Monitoring Principles
+    - ISO 9001:2015, Clauses 9 and 10
+- name: Procurement
+  sequence: 2
+  chain_stage: Physical and Metrological Foundation
+  levels:
+  - score: 0
+    label: Absent / Non-compliant
+    criteria:
+    - Procurement decisions are made without documented observing, user or technical requirements
+    - Instrument performance requirements such as range, accuracy, uncertainty or resolution are not formally
+      specified
+    - WMO guidance, international standards and application needs are not considered during procurement
+    - Supplier selection is primarily cost-driven and not supported by structured technical evaluation
+    - Acceptance testing, verification and validation before operational deployment are absent or undocumented
+    standards_ref:
+    - WMO-No. 8, Volume I, Chapter 1.4 and 1.6
+    - WMO-No. 8, Volume III, Chapter 1
+    - ISO 9001:2015, Clause 8.4
+  - score: 1
+    label: Basic / Ad hoc
+    criteria:
+    - Basic technical specifications are defined for selected procurements but vary between projects or
+      networks
+    - Procurement relies heavily on supplier information, previous practice or individual technical judgement
+    - User requirements are considered informally and are not consistently translated into measurable
+      specifications
+    - Non-functional requirements such as reliability, maintainability, power management or availability
+      are considered inconsistently
+    - Acceptance checks are performed case by case and are not governed by a standard process
+    standards_ref:
+    - WMO-No. 8, Volume I, General requirements of instruments
+    - WMO-No. 8, Volume III, Automatic Weather Stations
+    - ISO 9001:2015, Clause 8.4
+  - score: 2
+    label: Structured / Partially Compliant
+    criteria:
+    - Procurement procedures are documented and consistently applied for major sensor, station or data
+      logger purchases
+    - Specifications include key measurement requirements such as range, accuracy, resolution and operating
+      conditions
+    - User requirements, applicable WMO guidance and operational constraints are considered when preparing
+      specifications
+    - Supplier evaluations and technical assessments are documented and retained
+    - Factory acceptance, site acceptance or internal verification activities are applied for critical
+      systems
+    - Procurement records support traceability from requirements to selected technical solution
+    standards_ref:
+    - WMO-No. 8, Volume I, Chapter 1.4 and 1.6
+    - WMO-No. 8, Volume III, Chapter 1
+    - Manual on WIGOS (WMO-No. 1160)
+    - ISO 9001:2015, Clause 8.4
+  - score: 3
+    label: Compliant (Best Practice)
+    criteria:
+    - Procurement specifications are derived from documented observing requirements, user needs, WMO guidance
+      and operational constraints
+    - Specifications include measurement range, accuracy, uncertainty, resolution, sampling or averaging
+      requirements and environmental conditions
+    - Non-functional requirements such as availability, reliability, maintainability, power supply and
+      communications are included where relevant
+    - Market engagement, technical research, pre-qualification testing or field trials are used for significant
+      procurements
+    - Factory Acceptance Tests, Site Acceptance Tests and internal verification and validation are defined
+      before operational acceptance
+    - Third-party delivered systems are subject to documented acceptance criteria and organizational verification
+    - Procurement decisions consider lifecycle cost, operational risk and impact on observation quality
+    standards_ref:
+    - WMO-No. 8, Volume I, Chapter 1.4 and Annex 1.A
+    - WMO-No. 8, Volume III, Chapter 1
+    - Manual on WIGOS (WMO-No. 1160)
+    - ISO 9001:2015, Clauses 8.4 and 8.5
+    - GCOS Climate Monitoring Principles
+  - score: 4
+    label: Optimized / Continual Improvement
+    criteria:
+    - Procurement strategy is integrated with observing network strategy, lifecycle planning and long-term
+      service requirements
+    - Specifications are periodically updated using operational experience, QC findings, maintenance outcomes
+      and research insights
+    - Structured technology scouting, market engagement and field trials are used to identify suitable
+      future observing solutions
+    - Procurement decisions explicitly assess impacts on long-term continuity, homogeneity and network
+      representativeness where relevant
+    - Supplier and system performance are monitored using defined indicators and lessons learned are captured
+    - Acceptance test results and operational experience are used to improve future procurement specifications
+      and evaluation criteria
+    - Procurement outcomes support continual improvement of observing capability and data quality
+    standards_ref:
+    - Manual on WIGOS (WMO-No. 1160)
+    - WMO-No. 8, Volume III, Observing Systems
+    - GCOS Climate Monitoring Principles
+    - ISO 9001:2015, Clauses 9 and 10
+- name: Lifecycle Mgmt and Replacement
+  sequence: 3
+  chain_stage: Physical and Metrological Foundation
+  levels:
+  - score: 0
+    label: Absent / Non-compliant
+    criteria:
+    - Instruments, sensors, data loggers and components are not uniquely identifiable throughout their
+      lifecycle
+    - No central asset repository or controlled inventory exists for operational observing assets
+    - Deployment history, calibration status, maintenance history and lifecycle status are not reliably
+      recorded
+    - Replacement decisions are reactive and based mainly on failures or immediate operational need
+    - Instrument replacement impacts on observations, metadata and climate continuity are not assessed
+    - Decommissioning controls are absent and retired instruments may re-enter service unintentionally
+    standards_ref:
+    - WMO-No. 8, Volume I, Metadata and homogeneity
+    - WIGOS Metadata Standard (WMO-No. 1192)
+    - Manual on WIGOS (WMO-No. 1160)
+  - score: 1
+    label: Basic / Ad hoc
+    criteria:
+    - Basic asset records exist but completeness varies across networks, stations or equipment categories
+    - Unique identifiers are used for many assets but lifecycle traceability is incomplete
+    - Replacement planning is mainly reactive and driven by failure, obsolescence or local operational
+      experience
+    - Hybrid operation of multiple sensor types is managed case by case
+    - Parallel measurements, intercomparisons or impact assessments are used inconsistently
+    - Decommissioned instruments are recorded locally but controls to prevent reuse are limited
+    standards_ref:
+    - WMO-No. 8, Volume I and III
+    - WIGOS Metadata Standard (WMO-No. 1192)
+  - score: 2
+    label: Structured / Partially Compliant
+    criteria:
+    - A central asset repository is maintained for major observing assets, including unique identifiers
+      and deployment information
+    - Calibration history, maintenance events, firmware or hardware versions and lifecycle status are
+      recorded for critical assets
+    - Replacement planning exists for key sensor categories and major observing systems
+    - Verification testing is performed before operational deployment of replacement sensors or data loggers
+    - Hybrid operation of different sensor types is documented and managed for selected measurands
+    - Formal decommissioning procedures exist and asset status is updated after retirement or replacement
+    - Replacement records support traceability between asset changes and observing records
+    standards_ref:
+    - WIGOS Metadata Standard (WMO-No. 1192), Categories 3, 5 and 8
+    - Manual on WIGOS (WMO-No. 1160)
+    - WMO-No. 8, Volume I, Chapter 1.3.4
+  - score: 3
+    label: Compliant (Best Practice)
+    criteria:
+    - Asset repository includes serial number, deployment history, calibration history, maintenance history,
+      firmware or hardware version and lifecycle status
+    - Replacement planning is based on lifecycle expectations, performance history, operational requirements
+      and risk
+    - Hybrid sensor operation is formally managed to protect data consistency across sensor types and
+      manufacturers
+    - Laboratory or field verification is performed before large-scale deployment of replacement sensors
+      or systems
+    - Intercomparison or parallel measurement campaigns are performed when continuity or homogeneity may
+      be affected
+    - Impacts on operational products, climate records and users are assessed before implementation
+    - Decommissioned instruments are removed from operational inventories and prevented from re-entering
+      service
+    standards_ref:
+    - WMO-No. 8, Volume I, Chapter 1.3.4
+    - WMO-No. 8, Volume III, Observing Systems
+    - WIGOS Metadata Standard (WMO-No. 1192)
+    - Manual on WIGOS (WMO-No. 1160)
+    - GCOS Climate Monitoring Principles
+  - score: 4
+    label: Optimized / Continual Improvement
+    criteria:
+    - Lifecycle management is integrated with observing network strategy, investment planning and long-term
+      observing objectives
+    - Replacement planning considers technological developments, user requirements, performance analytics
+      and network evolution
+    - Intercomparison and overlap studies are designed to support transfer functions, homogenization or
+      impact assessment where needed
+    - Results from replacement projects are incorporated into operational processing, metadata records
+      and user communication
+    - Asset performance analytics are used to forecast replacement needs and reduce operational risk
+    - Lifecycle decisions explicitly support long-term continuity, homogeneity and fitness-for-purpose
+      of observational records
+    - Lessons learned are systematically used to improve future replacement, procurement and maintenance
+      strategies
+    standards_ref:
+    - Manual on WIGOS (WMO-No. 1160)
+    - WIGOS Metadata Standard (WMO-No. 1192)
+    - GCOS Climate Monitoring Principles
+    - WMO-No. 8, Volume I and III
+    - ISO 9001:2015, Clauses 9 and 10
+- name: Sensor and Station Maintenance
+  sequence: 4
+  chain_stage: Network Infrastructure and Field Maintenance
+  levels:
+  - score: 0
+    label: Absent / Non-compliant
+    criteria:
+    - No documented preventive or corrective maintenance programme exists for sensors, stations or networks
+    - Maintenance is primarily reactive and initiated only after failures or user complaints
+    - Maintenance visits, findings and corrective actions are not reliably recorded
+    - No formal fault reporting, escalation or resolution process exists
+    - Station or sensor performance is not monitored systematically
+    - Responsibilities for maintenance activities and follow-up actions are unclear
+    standards_ref:
+    - WMO-No. 8, Volume III, Section 1.7
+    - WMO-No. 8, Volume V, Quality Assurance
+  - score: 1
+    label: Basic / Ad hoc
+    criteria:
+    - Basic preventive maintenance activities are performed but intervals are not consistently justified
+    - Maintenance intervals are based mainly on manufacturer guidance or local operational experience
+    - Faults are reported through informal or manual channels
+    - Corrective actions are tracked inconsistently and closure is not always verified
+    - Contractor maintenance activities are used where needed but service expectations are not consistently
+      specified
+    - Monitoring of station performance relies largely on staff knowledge or manual review
+    standards_ref:
+    - WMO-No. 8, Volume III, Section 1.7
+    - WMO-No. 8, Volume V
+    - ISO 9001:2015
+  - score: 2
+    label: Structured / Partially Compliant
+    criteria:
+    - Preventive maintenance schedules are documented for major sensor, station and network types
+    - Maintenance visits are recorded and actions from inspections are tracked to closure
+    - Fault reporting systems, manual reports or automated alerts are routinely used
+    - Escalation procedures are defined for critical failures or service-impacting issues
+    - Service providers are managed through documented agreements where applicable
+    - Basic station or sensor monitoring supports prioritization of corrective maintenance
+    - Maintenance information is available to relevant internal stakeholders
+    standards_ref:
+    - WMO-No. 8, Volume III, Sections 1.5 and 1.7
+    - WMO-No. 8, Volume V, Quality Management
+    - WMO-No. 1269
+    - ISO 9001:2015
+  - score: 3
+    label: Compliant (Best Practice)
+    criteria:
+    - Preventive maintenance programme is based on operational requirements, parameter criticality, historical
+      performance and risk
+    - Maintenance completion rates, overdue actions and fault resolution are monitored and reported
+    - Automatic monitoring, QC flags, system alarms or ticketing systems are integrated into maintenance
+      workflows
+    - Corrective maintenance follows defined workflows with escalation pathways, target response times
+      and resolution tracking
+    - Contractor performance is managed through SLAs and periodically reviewed against service expectations
+    - Root cause analysis is performed for significant, recurring or service-impacting failures
+    - Maintenance history is available at station and sensor level and supports calibration, lifecycle
+      and quality management
+    standards_ref:
+    - WMO-No. 8, Volume III, Sections 1.5, 1.7 and 1.7.1
+    - WMO-No. 8, Volume V, Quality Assurance and Management
+    - WMO-No. 1269
+    - ISO 9001:2015, Clauses 8, 9 and 10
+  - score: 4
+    label: Optimized / Continual Improvement
+    criteria:
+    - Maintenance intervals and strategies are optimized using performance trends, failure analysis and
+      operational experience
+    - Predictive or condition-based maintenance approaches are applied where technically and operationally
+      appropriate
+    - Network-wide reliability indicators such as availability, downtime, recurrence and response times
+      are analysed
+    - SLA performance and maintenance effectiveness are reviewed using defined improvement targets
+    - Root cause analysis outcomes are systematically used to improve procedures, training and system
+      design
+    - Maintenance planning is integrated with calibration, lifecycle management and network performance
+      monitoring
+    - Lessons learned are captured and used to improve observing system reliability and service continuity
+    standards_ref:
+    - WMO-No. 8, Volume III, Observing Systems Management
+    - WMO-No. 8, Volume V, Continuous Improvement
+    - WMO-No. 1269
+    - ISO 9001:2015, Clauses 9 and 10
+- name: Staff Competence and Training
+  sequence: 5
+  chain_stage: Network Infrastructure and Field Maintenance
+  levels:
+  - score: 0
+    label: Absent / Non-compliant
+    criteria:
+    - No documented training programme or competence framework exists for relevant technical and operational
+      roles
+    - Roles, responsibilities and required competences are not formally defined
+    - Competence assessments are not performed or recorded
+    - Training records are incomplete or unavailable
+    - Succession planning and workforce continuity are not addressed
+    - Competence requirements for subcontractor staff are not defined
+    standards_ref:
+    - WMO Technical Regulations (WMO-No. 49), Part V
+    - ISO 9001:2015, Clause 7.2
+    - ISO/IEC 17025:2017, Clause 6.2
+  - score: 1
+    label: Basic / Ad hoc
+    criteria:
+    - Training is provided mainly through informal knowledge transfer or on-the-job experience
+    - Training needs are identified reactively or by individual supervisors
+    - Competence is assessed informally and records are incomplete
+    - Onboarding arrangements exist for some roles but are not standardized
+    - Dependence on key individuals creates operational continuity risks
+    - Contractor competence is assessed mainly during procurement or based on supplier assurance
+    standards_ref:
+    - WMO Technical Regulations (WMO-No. 49), Part V
+    - ISO 9001:2015, Clause 7.2
+  - score: 2
+    label: Structured / Partially Compliant
+    criteria:
+    - Training plans are documented for new staff and selected operational or technical roles
+    - Competence requirements are defined for critical functions and activities
+    - Training records and initial competence assessments are maintained centrally
+    - Refresher training is provided for selected procedures, systems or safety-critical activities
+    - Contractor competence requirements are specified for relevant outsourced activities
+    - Basic succession planning exists for critical specialist roles
+    - Workforce risks are considered for selected operational capabilities
+    standards_ref:
+    - WMO Technical Regulations (WMO-No. 49), Part V
+    - ISO 9001:2015, Clause 7.2
+    - ISO/IEC 17025:2017, Clause 6.2
+  - score: 3
+    label: Compliant (Best Practice)
+    criteria:
+    - Competency framework is established for relevant technical, observational and operational roles
+    - Training plans cover onboarding, refresher training and professional development needs
+    - Competence assessments are conducted periodically and documented
+    - Personnel are formally authorized for specific technical or calibration-related activities where
+      appropriate
+    - Training effectiveness is reviewed and training content is updated when procedures, systems or standards
+      change
+    - Succession planning is maintained for critical technical and operational functions
+    - Contractor competence is verified and periodically reviewed before work on operational systems
+    standards_ref:
+    - WMO Technical Regulations (WMO-No. 49), Part V
+    - WMO-No. 8, Volume V, Quality Management
+    - ISO 9001:2015, Clause 7.2
+    - ISO/IEC 17025:2017, Clause 6.2
+  - score: 4
+    label: Optimized / Continual Improvement
+    criteria:
+    - Workforce development is integrated with long-term organizational strategy and observing system
+      evolution
+    - Competency gaps are proactively identified using workforce and capability analysis
+    - Knowledge management supports retention and transfer of critical expertise
+    - Succession planning is linked to workforce planning, retirement forecasting and future capability
+      needs
+    - Competence metrics and training indicators are monitored and reviewed
+    - Lessons learned from incidents, audits and operational reviews are incorporated into training programmes
+    - Contractor competence performance is monitored and used to improve outsourcing and service management
+    standards_ref:
+    - WMO Technical Regulations (WMO-No. 49), Part V
+    - WMO-No. 8, Volume V, Quality Management and Continual Improvement
+    - ISO 9001:2015, Clauses 7.2, 9 and 10
+    - ISO/IEC 17025:2017, Clause 6.2

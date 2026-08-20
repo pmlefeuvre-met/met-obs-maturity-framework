@@ -1,0 +1,253 @@
+id: FA2
+title: Data Processing & Quality Control
+description: Data processing, quality control, expert review and performance monitoring of observational
+  data.
+sub_domains:
+- name: Data Processing
+  sequence: 6
+  chain_stage: Real-Time Data Ingestion and Processing
+  levels:
+  - score: 0
+    label: Absent / Non-compliant
+    criteria:
+    - Processing methods are undocumented
+    - Observation lineage cannot be reconstructed
+    - Traceability to source observations is absent
+    - Metadata are not integrated in processing
+    - Reproducibility cannot be demonstrated
+    standards_ref:
+    - WIGOS Metadata Standard
+    - WMO-No.1269
+  - score: 1
+    label: Basic / Ad hoc
+    criteria:
+    - Processing methods are partially documented
+    - Workflows vary between systems
+    - Metadata usage is inconsistent
+    - Changes are implemented informally
+    - Reprocessing capability is limited
+    standards_ref:
+    - WMO-No.8
+    - WIGOS Metadata Standard
+  - score: 2
+    label: Structured / Partially Compliant
+    criteria:
+    - Processing workflows are documented and controlled
+    - Algorithms and configurations are traceable
+    - Observations are linked to station and instrument metadata
+    - Changes are reviewed before implementation
+    - Reprocessing is possible for key datasets
+    - Processing methods are standardized for major applications
+    standards_ref:
+    - WIGOS Manual
+    - WIGOS Metadata Standard
+  - score: 3
+    label: Compliant (Best Practice)
+    criteria:
+    - Full traceability exists from observations to products
+    - Observation lineage can be reconstructed using metadata and processing records
+    - Processing methods are standardized and governed
+    - Metadata are maintained throughout the processing chain
+    - Reprocessing supports reproducibility and transparency
+    - Changes are validated and impact-assessed before deployment
+    - Users are informed of significant processing changes
+    standards_ref:
+    - WIGOS Manual
+    - WMO-No.1269
+    - ISO 9001
+  - score: 4
+    label: Optimized / Continual Improvement
+    criteria:
+    - Processing methods evolve using operational evidence and research
+    - Processing performance is routinely monitored
+    - Reprocessing supports long-term stewardship objectives
+    - Impacts of changes are systematically evaluated
+    - Metadata, QC and processing governance are integrated
+    - User feedback informs processing improvements
+    - Continuous improvement is embedded
+    standards_ref:
+    - WIGOS Manual
+    - ISO 9001
+    - GCOS
+- name: Quality Control
+  sequence: 7
+  chain_stage: Automated Data Quality Checkpoints
+  levels:
+  - score: 0
+    label: Absent / Non-compliant
+    criteria:
+    - No systematic QC framework exists
+    - QC thresholds are undefined
+    - QC outputs are not retained
+    - Manual edits are not traceable
+    - Users receive little or no quality information
+    standards_ref:
+    - WMO-No.1269
+  - score: 1
+    label: Basic / Ad hoc
+    criteria:
+    - Basic QC checks exist for selected parameters
+    - QC methods vary across networks
+    - Thresholds rely on local practice
+    - QC flags are used inconsistently
+    - Documentation is incomplete
+    standards_ref:
+    - WMO-No.1269
+  - score: 2
+    label: Structured / Partially Compliant
+    criteria:
+    - QC procedures are documented
+    - Automated QC is applied to key observations
+    - QC flags are propagated through the data chain
+    - Manual edits are traceable
+    - Quality information is available for major products
+    - QC methods are periodically reviewed
+    standards_ref:
+    - WMO-No.1269
+    - WIGOS Metadata Standard
+  - score: 3
+    label: Compliant (Best Practice)
+    criteria:
+    - QC is applied across raw data, processed data and observation products
+    - QC methods are scientifically and operationally justified
+    - QC thresholds and labels are validated and reviewed
+    - Quality information supports fitness-for-purpose assessments
+    - Manual interventions are justified and auditable
+    - Feedback from maintenance, calibration and expert review improves QC
+    - QC governance is formally defined
+    standards_ref:
+    - WMO-No.1269
+    - WIGOS Manual
+  - score: 4
+    label: Optimized / Continual Improvement
+    criteria:
+    - QC effectiveness is measured using defined indicators
+    - Recurring quality issues are analysed systematically
+    - Research and operational experience improve QC methods
+    - QC outcomes drive improvements in observations and processing
+    - User feedback is incorporated into QC evolution
+    - Continuous improvement is formally governed
+    - QC performance is benchmarked over time
+    standards_ref:
+    - WMO-No.1269
+    - GCOS
+- name: Expert Review & LTQM
+  sequence: 9
+  chain_stage: Manual Data Quality Control and Expert Review
+  levels:
+  - score: 0
+    label: Absent / Non-compliant
+    criteria:
+    - No formal expert review process
+    - Long-term quality monitoring absent
+    - Trends and inhomogeneities are not assessed
+    - Metadata are not considered
+    standards_ref:
+    - GCOS
+    - WMO-No.1269
+  - score: 1
+    label: Basic / Ad hoc
+    criteria:
+    - Reviews occur only for exceptional cases
+    - Dependence on individual expertise
+    - Limited use of metadata and supporting evidence
+    - Findings are not systematically applied
+    standards_ref:
+    - GCOS
+  - score: 2
+    label: Structured / Partially Compliant
+    criteria:
+    - Review procedures are documented
+    - Metadata, QC and maintenance records are considered
+    - Trends and anomalies are monitored
+    - Findings are recorded and shared
+    - Climate-relevant observations receive additional scrutiny
+    standards_ref:
+    - GCOS
+    - WIGOS Metadata Standard
+  - score: 3
+    label: Compliant (Best Practice)
+    criteria:
+    - Expert review supports assessment of climate-relevant extremes, records and unusual events
+    - Metadata, maintenance history, siting information and QC outcomes are reviewed as supporting evidence
+    - Multiple information sources are evaluated, including neighbouring observations and other relevant
+      datasets
+    - Formal methods are used to identify trends, shifts, biases and inhomogeneities
+    - Findings are documented, communicated and incorporated into operational practices
+    - Long-term usability, transparency and trustworthiness of observational records are protected
+    - Climate stewardship principles are embedded in review activities
+    standards_ref:
+    - GCOS
+    - WMO-No.1269
+  - score: 4
+    label: Optimized / Continual Improvement
+    criteria:
+    - Long-term monitoring is integrated into climate data stewardship and network governance
+    - Advanced analytical techniques support identification of trends, breaks and inhomogeneities
+    - Findings support reprocessing, homogenization and metadata improvement activities where justified
+    - Review outcomes influence network design, maintenance and processing decisions
+    - Long-term quality indicators are monitored and periodically reviewed
+    - Knowledge gained from reviews is incorporated into procedures and guidance
+    - Continuous improvement is embedded across review and stewardship activities
+    standards_ref:
+    - GCOS
+    - WIGOS
+- name: Performance Monitoring
+  sequence: 8
+  chain_stage: Automated Data Quality Checkpoints
+  levels:
+  - score: 0
+    label: Absent / Non-compliant
+    criteria:
+    - No KPIs defined
+    - No routine reporting
+    - Performance issues handled reactively
+    - User requirements not considered
+    standards_ref:
+    - WMO-No.1269
+  - score: 1
+    label: Basic / Ad hoc
+    criteria:
+    - Limited KPIs monitored
+    - Reporting is irregular
+    - Targets based mainly on historical practice
+    - Improvement actions are inconsistently managed
+    standards_ref:
+    - ISO 9001
+  - score: 2
+    label: Structured / Partially Compliant
+    criteria:
+    - KPIs are formally defined
+    - Performance is monitored and reported
+    - Corrective actions are tracked
+    - Indicators support operational management
+    - User requirements are considered
+    standards_ref:
+    - WIGOS Manual
+    - ISO 9001
+  - score: 3
+    label: Compliant (Best Practice)
+    criteria:
+    - KPIs cover availability, timeliness, quality, reliability and service performance where relevant
+    - Performance is monitored across observing, processing and delivery stages of the data chain
+    - Targets are aligned with user requirements, operational needs and international guidance
+    - Results support maintenance prioritization, lifecycle planning and investment decisions
+    - Performance reviews identify recurring issues and improvement opportunities
+    - Reporting supports management oversight and governance
+    - Corrective and preventive actions are tracked to completion
+    standards_ref:
+    - WIGOS Manual
+    - WMO-No.1269
+  - score: 4
+    label: Optimized / Continual Improvement
+    criteria:
+    - KPI framework is periodically reviewed and refined using operational evidence and user feedback
+    - Trend analysis identifies structural improvement opportunities and emerging risks
+    - Performance monitoring is integrated with quality management and continual improvement processes
+    - Improvement actions are evaluated for effectiveness and sustained benefit
+    - User and stakeholder feedback informs target setting and prioritization
+    - Performance indicators support strategic planning and network evolution
+    - Continuous improvement is embedded across observation services
+    standards_ref:
+    - GCOS
+    - ISO 9001
