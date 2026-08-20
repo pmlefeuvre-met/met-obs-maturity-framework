@@ -29,11 +29,41 @@ class Level:
 
 
 @dataclass(frozen=True)
+class Gate:
+    """Cross-element prerequisite: this element cannot be declared at
+    `applies_at_level` unless `requires` (another element's id in the same
+    sub-domain) has been declared at least at `min_level`."""
+    requires: str
+    min_level: int
+    applies_at_level: int
+
+
+@dataclass(frozen=True)
+class Element:
+    """One independently-progressing theme/track within a sub-domain (e.g.
+    'Traceability' vs 'Calibration Interval Management'). Elements can sit at
+    different levels simultaneously -- unlike the single sub-domain ladder,
+    non-conflicting parts of a sub-domain can advance independently. Gates
+    express real prerequisites between elements where the source content
+    justifies one ('foreign keys' between tracks)."""
+    id: str
+    title: str
+    weight: float
+    level_text: dict[int, str]  # only keys for levels where this element has distinct content
+    gates: tuple[Gate, ...] = ()
+
+    @property
+    def applicable_levels(self) -> tuple[int, ...]:
+        return tuple(sorted(self.level_text.keys()))
+
+
+@dataclass(frozen=True)
 class SubDomain:
     name: str
     sequence: int  # position (1..12) in the end-to-end Observation Chain
     chain_stage: str  # narrative grouping shared across Focus Areas
-    levels: tuple[Level, ...]  # sorted by score, 0..4
+    levels: tuple[Level, ...]  # sorted by score, 0..4 -- labels/standards_ref
+    elements: tuple[Element, ...] = ()  # optional theme split; empty = single-ladder sub-domain
 
 
 @dataclass(frozen=True)
@@ -59,10 +89,27 @@ def load_model() -> list[FocusArea]:
                 Level(
                     score=lvl["score"],
                     label=lvl["label"],
-                    criteria=tuple(Criterion(text=c) for c in lvl["criteria"]),
+                    criteria=tuple(Criterion(text=c) for c in lvl.get("criteria", [])),
                     standards_ref=tuple(lvl.get("standards_ref", [])),
                 )
                 for lvl in sorted(sd["levels"], key=lambda lvl: lvl["score"])
+            )
+            elements = tuple(
+                Element(
+                    id=el["id"],
+                    title=el["title"],
+                    weight=el.get("weight", 1.0),
+                    level_text={int(k): v for k, v in el["level_text"].items()},
+                    gates=tuple(
+                        Gate(
+                            requires=g["requires"],
+                            min_level=g["min_level"],
+                            applies_at_level=g["applies_at_level"],
+                        )
+                        for g in el.get("gates", [])
+                    ),
+                )
+                for el in sd.get("elements", [])
             )
             sub_domains.append(
                 SubDomain(
@@ -70,6 +117,7 @@ def load_model() -> list[FocusArea]:
                     sequence=sd["sequence"],
                     chain_stage=sd["chain_stage"],
                     levels=levels,
+                    elements=elements,
                 )
             )
 

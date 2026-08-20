@@ -56,9 +56,18 @@ sub_domains:
   ```
   `standards_ref` lives on `Level` (references apply per-level, not per-bullet, matching the source content). Live in `data_loader.py`, cached with `@st.cache_data`, returning a single `list[FocusArea]`.
 * **Chain Ordering:** `data_loader.chain_items(model)` flattens the model into one `list[tuple[FocusArea, SubDomain]]` sorted by `SubDomain.sequence`. This is the single source of navigation order — UI code must not re-derive ordering by iterating Focus Areas first.
-* **Session State Management:** All user interactions (checked/unchecked criteria) **must** be stored in `st.session_state` using unique compound keys: `f"{fa_name}::{sub_domain}::L{level_score}::{bullet_index}"`. Do not rely on local variables for checkbox state across page re-runs.
+* **Session State Management:** All user interactions (checked/unchecked criteria, declared levels) **must** be stored in `st.session_state` using unique compound keys namespaced by the selected Met Institute: `f"{institute}::{fa_id}::{sub_domain}::L{level_score}::{bullet_index}"` (legacy checklist path) or `f"{institute}::{fa_id}::{sub_domain}::{element_id}::declared_level"` (element path). Do not rely on local variables for checkbox/radio state across page re-runs, and never drop the `institute` prefix — it's what keeps different institutes' answers from clobbering each other.
+* **Elements (per-sub-domain theme split — now the standard model for all 12 sub-domains):** A sub-domain's 5 level-paragraphs are not always one indivisible narrative — in reality some parts of a sub-domain progress independently (e.g. "Traceability" can be at Level 3 while "Records & Certificates" is still at Level 1 for the same sub-domain), while other parts are single-shot achievements that only appear once a certain level is reached. `SubDomain` carries an `elements: tuple[Element, ...]` field (still optional in the schema — an empty tuple falls back to the legacy single-ladder rendering/scoring path — but every sub-domain currently populates it):
+  ```
+  Element(id, title, weight, level_text: dict[int, str], gates: tuple[Gate, ...])
+  Gate(requires: element_id, min_level, applies_at_level)
+  ```
+  * `level_text` only has keys for the levels where that element/theme has distinct source content — themes are **not** forced to exist at all 5 levels (e.g. a theme with no Level 4 restatement simply caps at 3).
+  * Elements must be derived by semantically re-reading the *existing* source text and grouping bullets by theme across levels — **never by inventing new sentences** to fill gaps. If a theme has no bullet at some level in the source, it is absent at that level, full stop.
+  * A `Gate` expresses a genuine cross-element prerequisite only when the source text itself implies the dependency (e.g. an element's own Level 4 text says "...while maintaining traceability..." → gate on the `traceability` element). Do not invent gates speculatively.
+  * All 12 sub-domains across `fa1.yaml`, `fa2.yaml` and `fa3.yaml` are now element-based (5-7 elements each). Each sub-domain's `levels:` block retains only `score`/`label`/`standards_ref`; all criteria content was regrouped into `elements:` by semantic theme, with every original bullet accounted for exactly once and no invented text. Gates were added only where the source text explicitly implied a prerequisite (currently one gate, in `Calibration and Traceability`); the remaining 11 sub-domains had no textually-justified cross-element dependency and so carry no gates.
 
-### 2. Scoring & Math Logic (Declared Level + Next-Level Evidence)
+### 2. Scoring & Math Logic (Declared Level + Next-Level Evidence, or Weighted Elements)
 * **Level Scale:** 
   * `0`: Absent / Non-compliant (Baseline)
   * `1`: Basic / Ad hoc
@@ -66,22 +75,30 @@ sub_domains:
   * `3`: Compliant (**Best Practice Target**)
   * `4`: Optimized / Continual Improvement
 * **The assessor directly declares their current level.** Levels are holistic, narrative descriptions of practice — not independent checklist items that must all be true simultaneously. Requiring an assessor to tick a Level 1 bullet describing inferior/ad-hoc practice they have already surpassed, just to "unlock" credit for Level 2/3 (which is where they actually are), is not meaningful. Instead, the assessor reads each level's paragraph as a whole and **selects the one that currently matches reality** (a single judgement call, like picking a rubric row), stored in `st.session_state` as `f"{fa_id}::{sub_domain}::declared_level"`.
-* **Criteria checklists are evidence of progress toward the *next* level only.** Live in `scoring.py` as a pure function, independent of Streamlit:
+* **Criteria checklists are evidence of progress toward the *next* level only.** This applies to legacy (non-element) sub-domains. Live in `scoring.py` as a pure function, independent of Streamlit:
   1. Take `declared_level` (0-4) as given, not derived.
   2. If `declared_level < 4`, compute `ratio = checked / total` for the criteria of level `declared_level + 1` only.
   3. Levels at or below `declared_level` and levels beyond `declared_level + 1` do not affect the score.
 * **Calculation:** `final_score = min(4.0, round(declared_level + partial_credit, 2))`, where `partial_credit` is the `ratio` from the next level (0.0 if `declared_level == 4`).
+* **Element-based sub-domains score differently.** When `SubDomain.elements` is non-empty, there is no single ladder or checklist: each element gets its own direct-declared level (from its own `applicable_levels`, since not every element spans 0-4). `scoring.compute_sub_domain_element_score`:
+  1. Reads each element's declared level (default: its lowest applicable level).
+  2. Applies any `Gate`: if the element's declared level is `>= gate.applies_at_level` but the required element's declared level is `< gate.min_level`, the effective level is capped to `gate.applies_at_level - 1`.
+  3. `final_score = weighted mean of each element's effective_level`, using `Element.weight` (default `1.0` for all — real priority weighting needs domain/SME input, not an invented default).
 
 ### 3. UI & Visualization (Progressive Disclosure)
 * **Scaffolding:** Sidebar navigation is a single flat, ordered selector across all 12 sub-domains (via `chain_items`), not a two-level Focus-Area-then-sub-domain drill-down. The Focus Area is shown only as an "owner" caption/badge next to the selection, never as the primary grouping.
 * **Chain Overview:** Render a full-width chart (e.g. horizontal bar, ordered by `sequence`, colored by `chain_stage`) showing achieved score for all 12 sub-domains at once, with a dashed reference line at the Level 3 target — this is what makes a weak link anywhere in the chain visible at a glance.
 * **Layout:** Use `st.columns` to present the summary table alongside the live Plotly radar chart.
-* **Level Ladder:** Render a compact horizontal stepper (Level 0-4) at the top of each sub-domain view, highlighting the currently achieved level and the Level 3 target.
-* **Progressive Disclosure:**
+* **Element-based rendering (current path for all 12 sub-domains):** When `selected_domain.elements` is non-empty, `app.py` skips the single ladder entirely and instead:
+  * Renders each element in its own expander with a `st.radio` limited to that element's `applicable_levels` (not always 0-4) — one independent judgement call per track, keyed as `f"{fa_id}::{sub_domain}::{element_id}::declared_level"`.
+  * After collecting all declared levels, calls `compute_sub_domain_element_score` and surfaces a `st.warning` for any element whose effective level was capped by a `Gate`, naming the required element/level.
+  * Shows one weighted `st.progress` bar and score caption for the whole sub-domain — there is no per-level stepper/ladder in this path, since elements don't share a single level axis.
+* **Legacy single-ladder rendering (fallback path, currently unused by any shipped sub-domain but still supported for `elements == ()`):**
+  * **Level Ladder:** Render a compact horizontal stepper (Level 0-4) at the top of the sub-domain view, highlighting the currently achieved level and the Level 3 target.
   * Levels at or below the declared level render collapsed and read-only (e.g. `✅ Level 2 — surpassed`, expandable to review the criteria as plain text, no checkboxes).
   * The next level (`declared_level + 1`) renders expanded by default with interactive checkboxes — this is the only level whose criteria affect the score.
   * Levels beyond that render collapsed/disabled ("locked") until the assessor declares the prior level.
-* **Readability:** Inject custom CSS (`st.markdown(..., unsafe_allow_html=True)`) to increase font size and line-height for checkbox labels and headers — do not rely on Streamlit's default body text size.
+* **Readability:** Inject custom CSS (`st.markdown(..., unsafe_allow_html=True)`) to increase font size and line-height across the app — body/markdown text, captions, checkbox/radio labels, expander headers, dataframe cells, and heading sizes (`h1`/`h2`/`h3`) — do not rely on Streamlit's default body text size.
 * **Plotly Radar Chart:** 
   * Map `Sub-Domain` to `theta` and `Achieved Score` to `r`.
   * Fix `range_r` strictly between `[0, 4]`.
@@ -90,7 +107,16 @@ sub_domains:
 ### 4. Code Structure / Module Boundaries
 * `data_loader.py` — YAML → unified `FocusArea` model, cached parsing only.
 * `scoring.py` — pure hierarchical scoring functions (no Streamlit imports), unit-testable.
-* `app.py` — Streamlit UI only: navigation, level ladder rendering, dashboard/radar chart. Consumes `data_loader` and `scoring`, contains no parsing or scoring math of its own.
+* `institutes.py` — the `INSTITUTES: dict[id, display_name]` constant shared by `app.py` and `pages/*.py`. Single source of truth for which NMHSs the tool supports.
+* `storage.py` — pure file-based persistence (no Streamlit imports), unit-testable like `scoring.py`. Reads/writes one YAML file per institute under `saved/` (e.g. `saved/UKMO.yaml`), never a database — this matches the project's existing YAML-as-source-of-truth convention and keeps saved assessments human-readable and diffable in git. One row/file per institute (not append-only history): saving overwrites the prior file, gated by an explicit confirm-before-overwrite prompt in the UI (see below).
+* `app.py` — Streamlit UI only: institute selector, save/load controls, navigation, level ladder / element rendering, dashboard/radar chart. Consumes `data_loader`, `scoring`, `institutes`, and `storage`, contains no parsing, scoring, or persistence logic of its own.
+* `pages/1_Saved_Assessments.py` — a second Streamlit page (native multipage app, auto-discovered from `pages/`) that is read-only: lists every saved institute (assessor, timestamp, avg score), and lets the user pick 2+ institutes to overlay on a comparison radar chart. It never mutates `st.session_state` — to continue editing a saved assessment, use the "Load saved assessment" button on the main page instead.
+
+### 5. Multi-Institute Support & Persistence
+* **Institute selector:** A sidebar `st.selectbox` (options from `institutes.INSTITUTES`) picks which NMHS is currently being assessed; this choice namespaces every session-state key (see Session State Management above), so switching institutes mid-session never mixes their answers.
+* **Save:** An "Assessor name" free-text field (no auth) plus a "💾 Save this assessment" button. On click, all `st.session_state` entries prefixed `f"{institute}::"` are collected verbatim (declared levels, checked criteria) alongside the already-computed `scores_summary` rows, and written via `storage.save_assessment`. If a save already exists for that institute, the UI shows who saved it and when and requires an explicit "Yes, overwrite" click — saves are never silently clobbered.
+* **Load:** A "📂 Load saved assessment" button (enabled only if a save exists for the selected institute) copies the saved `answers` dict back into `st.session_state` and reruns, restoring every declared level/checkbox exactly as saved.
+* **Compare:** `pages/1_Saved_Assessments.py` is the shared, read-only view for showing teammates what each institute chose — an overview table plus a multi-institute radar overlay, so several people assessing different institutes (or the same institute at different times) can see and compare results without needing a database.
 
 ---
 
@@ -102,6 +128,11 @@ sub_domains:
 ├── app.py
 ├── data_loader.py
 ├── scoring.py
+├── institutes.py
+├── storage.py
+├── pages/
+│   └── 1_Saved_Assessments.py
+├── saved/                 # one YAML file per institute, created on first save
 ├── requirements.txt
 ├── fa1.yaml
 ├── fa2.yaml
@@ -124,4 +155,19 @@ source .venv/bin/activate
 # Upgrade pip and install requirements
 pip install --upgrade pip
 pip install -r requirements.txt
+```
+
+## Agent Workflow: Commit Messages
+
+After implementing a change (or a batch of related changes), always end the turn by
+providing a ready-to-paste commit command — do not wait to be asked. Format:
+
+```bash
+git add -A
+git commit -F - <<'EOF'
+Short imperative title (<= 60 chars)
+
+- Bullet per notable change, concise
+- ...
+EOF
 ```
