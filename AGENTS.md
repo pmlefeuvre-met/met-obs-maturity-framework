@@ -58,19 +58,19 @@ sub_domains:
 * **Chain Ordering:** `data_loader.chain_items(model)` flattens the model into one `list[tuple[FocusArea, SubDomain]]` sorted by `SubDomain.sequence`. This is the single source of navigation order — UI code must not re-derive ordering by iterating Focus Areas first.
 * **Session State Management:** All user interactions (checked/unchecked criteria) **must** be stored in `st.session_state` using unique compound keys: `f"{fa_name}::{sub_domain}::L{level_score}::{bullet_index}"`. Do not rely on local variables for checkbox state across page re-runs.
 
-### 2. Scoring & Math Logic (Hierarchical / Gated Ladder)
+### 2. Scoring & Math Logic (Declared Level + Next-Level Evidence)
 * **Level Scale:** 
   * `0`: Absent / Non-compliant (Baseline)
   * `1`: Basic / Ad hoc
   * `2`: Structured / Partially Compliant
   * `3`: Compliant (**Best Practice Target**)
   * `4`: Optimized / Continual Improvement
-* **Levels combine sequentially, not additively.** A level is only "achieved" once **all** of its criteria are checked AND every lower level (1..N-1) is also fully achieved. Live in `scoring.py` as a pure function, independent of Streamlit:
-  1. Walk levels `1 → 4` in order.
-  2. For each level, compute `ratio = checked / total`.
-  3. If `ratio == 1.0`, mark the level achieved and continue to the next level.
-  4. On the first level that is *not* fully achieved, its `ratio` becomes the **partial credit** toward the next rung, then stop — do not evaluate levels beyond that gate.
-* **Calculation:** `final_score = min(4.0, round(achieved_level + partial_credit, 2))`. Completion of Level 3/4 bullets does **not** contribute to the score while a lower level is incomplete.
+* **The assessor directly declares their current level.** Levels are holistic, narrative descriptions of practice — not independent checklist items that must all be true simultaneously. Requiring an assessor to tick a Level 1 bullet describing inferior/ad-hoc practice they have already surpassed, just to "unlock" credit for Level 2/3 (which is where they actually are), is not meaningful. Instead, the assessor reads each level's paragraph as a whole and **selects the one that currently matches reality** (a single judgement call, like picking a rubric row), stored in `st.session_state` as `f"{fa_id}::{sub_domain}::declared_level"`.
+* **Criteria checklists are evidence of progress toward the *next* level only.** Live in `scoring.py` as a pure function, independent of Streamlit:
+  1. Take `declared_level` (0-4) as given, not derived.
+  2. If `declared_level < 4`, compute `ratio = checked / total` for the criteria of level `declared_level + 1` only.
+  3. Levels at or below `declared_level` and levels beyond `declared_level + 1` do not affect the score.
+* **Calculation:** `final_score = min(4.0, round(declared_level + partial_credit, 2))`, where `partial_credit` is the `ratio` from the next level (0.0 if `declared_level == 4`).
 
 ### 3. UI & Visualization (Progressive Disclosure)
 * **Scaffolding:** Sidebar navigation is a single flat, ordered selector across all 12 sub-domains (via `chain_items`), not a two-level Focus-Area-then-sub-domain drill-down. The Focus Area is shown only as an "owner" caption/badge next to the selection, never as the primary grouping.
@@ -78,9 +78,9 @@ sub_domains:
 * **Layout:** Use `st.columns` to present the summary table alongside the live Plotly radar chart.
 * **Level Ladder:** Render a compact horizontal stepper (Level 0-4) at the top of each sub-domain view, highlighting the currently achieved level and the Level 3 target.
 * **Progressive Disclosure:**
-  * Fully achieved levels render collapsed (e.g. `✅ Level 2 — complete`, expandable to review).
-  * The current/next level (the one gating progress) renders expanded by default.
-  * Levels beyond the current gate render collapsed/disabled ("locked") until the prior level is fully achieved.
+  * Levels at or below the declared level render collapsed and read-only (e.g. `✅ Level 2 — surpassed`, expandable to review the criteria as plain text, no checkboxes).
+  * The next level (`declared_level + 1`) renders expanded by default with interactive checkboxes — this is the only level whose criteria affect the score.
+  * Levels beyond that render collapsed/disabled ("locked") until the assessor declares the prior level.
 * **Readability:** Inject custom CSS (`st.markdown(..., unsafe_allow_html=True)`) to increase font size and line-height for checkbox labels and headers — do not rely on Streamlit's default body text size.
 * **Plotly Radar Chart:** 
   * Map `Sub-Domain` to `theta` and `Achieved Score` to `r`.

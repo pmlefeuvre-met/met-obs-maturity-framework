@@ -53,14 +53,23 @@ def is_checked(fa_id: str, sub_domain_name: str, score: int, idx: int) -> bool:
     return bool(st.session_state.get(key, False))
 
 
+def declared_level_key(fa_id: str, sub_domain_name: str) -> str:
+    return f"{fa_id}::{sub_domain_name}::declared_level"
+
+
+def get_declared_level(fa_id: str, sub_domain_name: str) -> int:
+    return int(st.session_state.get(declared_level_key(fa_id, sub_domain_name), 0))
+
+
 items = chain_items(model)  # flat (FocusArea, SubDomain) list ordered by sequence, 1..12
 
 # Compute scores across the whole chain once, used by both the chain overview
 # chart and the sub-domain drill-down / final dashboard below.
 scores_summary = []
 for fa, sd in items:
+    declared = get_declared_level(fa.id, sd.name)
     sd_result = compute_sub_domain_score(
-        sd, lambda score, idx, _fa=fa, _sd=sd: is_checked(_fa.id, _sd.name, score, idx)
+        sd, declared, lambda score, idx, _fa=fa, _sd=sd: is_checked(_fa.id, _sd.name, score, idx)
     )
     scores_summary.append({
         "Sequence": sd.sequence,
@@ -70,7 +79,7 @@ for fa, sd in items:
         "Sub-Domain": sd.name,
         "Achieved Score": sd_result.final_score,
         "Target Score": 3.0,  # Best Practice Target
-        "Completion %": f"{sd_result.completion_pct}%",
+        "Progress to Next %": f"{sd_result.completion_pct}%",
     })
 df_summary = pd.DataFrame(scores_summary).sort_values("Sequence")
 
@@ -92,7 +101,7 @@ fig_chain = px.bar(
 )
 fig_chain.add_vline(x=3.0, line_dash="dash", line_color="red", annotation_text="Level 3 Target")
 fig_chain.update_layout(height=450, legend_title_text="Chain Stage")
-st.plotly_chart(fig_chain, use_container_width=True)
+st.plotly_chart(fig_chain, width="stretch")
 st.divider()
 
 # Sidebar Navigation — one flat, ordered list across the whole chain.
@@ -109,8 +118,22 @@ st.sidebar.caption(f"Owner: {selected_fa.id} — {selected_fa.title}")
 st.subheader(f"{selected_domain.sequence:02d}. {selected_domain.chain_stage} ➔ {selected_domain.name}")
 st.caption(f"{selected_fa.id}: {selected_fa.title} — {selected_fa.description}")
 
+level_by_score = {lvl.score: lvl for lvl in selected_domain.levels}
+
+st.markdown("**Which level currently best describes your practice for this sub-domain?**")
+declared_level = st.radio(
+    "Declared level",
+    options=sorted(level_by_score),
+    format_func=lambda s: f"L{s} — {level_by_score[s].label}",
+    horizontal=True,
+    key=declared_level_key(selected_fa.id, selected_domain.name),
+    label_visibility="collapsed",
+)
+st.caption("Pick the paragraph that matches you *now* — do not re-litigate history. Ticking boxes below only tracks progress toward the next level.")
+
 result = compute_sub_domain_score(
     selected_domain,
+    declared_level,
     lambda score, idx: is_checked(selected_fa.id, selected_domain.name, score, idx),
 )
 
@@ -128,32 +151,43 @@ st.progress(min(result.final_score / 4.0, 1.0))
 st.caption(f"Achieved score: **{result.final_score} / 4.0**  •  Best Practice Target: Level 3")
 st.divider()
 
-# Render Checklist by Maturity Level with progressive disclosure
+# Render Checklist by Maturity Level.
+# Only the next level's criteria are interactive (evidence of progress toward
+# it); surpassed and locked levels are shown read-only, since the assessor's
+# declared level -- not bottom-up box-ticking -- is what determines the score.
+next_score = declared_level + 1 if declared_level < 4 else None
+
 for level in sorted(selected_domain.levels, key=lambda lvl: lvl.score):
     if level.score == 0:
         continue  # Level 0 represents "Absent / Non-compliant" baseline
 
-    ratio = result.level_ratios.get(level.score, 0.0)
-    is_locked = level.score > result.achieved_level + 1
-    is_complete = level.score <= result.achieved_level
-    is_current = level.score == result.achieved_level + 1
+    is_surpassed = level.score <= declared_level
+    is_next = level.score == next_score
 
-    if is_complete:
-        header = f"✅ Level {level.score}: {level.label} — complete"
+    if is_surpassed:
+        header = f"✅ Level {level.score}: {level.label} — surpassed"
         expanded = False
-    elif is_current:
-        header = f"➡️ Level {level.score}: {level.label} — {round(ratio * 100)}% complete"
+    elif is_next:
+        header = f"➡️ Level {level.score}: {level.label} — {round(result.partial_credit * 100)}% progress toward this level"
         expanded = True
     else:
         header = f"🔒 Level {level.score}: {level.label} — locked"
         expanded = False
 
     with st.expander(header, expanded=expanded):
-        if is_locked:
-            st.caption("Complete the previous level to unlock these criteria.")
-        for idx, criterion in enumerate(level.criteria):
-            item_key = f"{selected_fa.id}::{selected_domain.name}::L{level.score}::{idx}"
-            st.checkbox(criterion.text, key=item_key, disabled=is_locked)
+        if is_surpassed:
+            st.caption("Already surpassed — shown for reference only.")
+            for criterion in level.criteria:
+                st.markdown(f"- {criterion.text}")
+        elif is_next:
+            st.caption("Tick the criteria you currently satisfy to track progress toward this level.")
+            for idx, criterion in enumerate(level.criteria):
+                item_key = f"{selected_fa.id}::{selected_domain.name}::L{level.score}::{idx}"
+                st.checkbox(criterion.text, key=item_key)
+        else:
+            st.caption("Declare the previous level first to unlock these criteria.")
+            for criterion in level.criteria:
+                st.markdown(f"- {criterion.text}")
         if level.standards_ref:
             st.caption("**Key Standards References:** " + "; ".join(level.standards_ref))
 
@@ -166,8 +200,8 @@ col1, col2 = st.columns([1, 1])
 
 with col1:
     st.dataframe(
-        df_summary[['Sequence', 'Chain Stage', 'Sub-Domain', 'Achieved Score', 'Target Score', 'Completion %']],
-        use_container_width=True,
+        df_summary[['Sequence', 'Chain Stage', 'Sub-Domain', 'Achieved Score', 'Target Score', 'Progress to Next %']],
+        width="stretch",
         hide_index=True,
     )
 
@@ -187,5 +221,5 @@ with col2:
         name="Best Practice Target (Level 3)",
         line=dict(dash='dash', color='red')
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
