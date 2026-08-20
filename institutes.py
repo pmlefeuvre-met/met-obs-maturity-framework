@@ -1,4 +1,4 @@
-"""Met Institute constants shared between app.py and pages/*.py."""
+"""Met Institute constants shared between 🌤️_Assessment.py and pages/*.py."""
 
 from dataclasses import dataclass
 

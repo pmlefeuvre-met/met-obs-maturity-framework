@@ -107,6 +107,35 @@ if st.session_state.get("_pending_overwrite") and existing_save is not None:
     if confirm_col2.button("No", key="confirm_overwrite_cancel", width="stretch"):
         st.session_state["_pending_overwrite"] = False
 
+# Export / Import — a client-side YAML round trip independent of saved/ on
+# disk: lets an assessor take their session home, or resume it on another
+# machine/deployment, without needing server-side storage at all.
+current_answers = {k: v for k, v in st.session_state.items() if str(k).startswith(f"{selected_institute}::")}
+st.sidebar.download_button(
+    "⬇️ Export session as YAML",
+    data=storage.export_yaml(selected_institute, assessor_name, current_answers),
+    file_name=f"{selected_institute}_assessment.yaml",
+    mime="application/x-yaml",
+    width="stretch",
+    disabled=not current_answers,
+)
+
+uploaded_file = st.sidebar.file_uploader(
+    "⬆️ Import a YAML export", type=["yaml", "yml"], label_visibility="collapsed"
+)
+if uploaded_file is not None:
+    try:
+        imported = storage.import_yaml(uploaded_file.getvalue().decode("utf-8"), selected_institute)
+    except ValueError:
+        st.sidebar.error("Could not read that file — is it a valid exported assessment YAML?")
+    else:
+        if imported.institute != selected_institute:
+            source_label = INSTITUTES[imported.institute].short if imported.institute in INSTITUTES else imported.institute
+            st.sidebar.warning(f"File was exported for {source_label} — will be applied to {INSTITUTES[selected_institute].short}.")
+        if st.sidebar.button("Apply imported answers", width="stretch"):
+            st.session_state.update(imported.answers)
+            st.rerun()
+
 st.sidebar.divider()
 
 

@@ -89,7 +89,7 @@ sub_domains:
 * **Scaffolding:** Sidebar navigation is a single flat, ordered selector across all 12 sub-domains (via `chain_items`), not a two-level Focus-Area-then-sub-domain drill-down. The Focus Area is shown only as an "owner" caption/badge next to the selection, never as the primary grouping.
 * **Chain Overview:** Render a full-width chart (e.g. horizontal bar, ordered by `sequence`, colored by `chain_stage`) showing achieved score for all 12 sub-domains at once, with a dashed reference line at the Level 3 target — this is what makes a weak link anywhere in the chain visible at a glance.
 * **Layout:** Use `st.columns` to present the summary table alongside the live Plotly radar chart.
-* **Element-based rendering (current path for all 12 sub-domains):** When `selected_domain.elements` is non-empty, `app.py` skips the single ladder entirely and instead:
+* **Element-based rendering (current path for all 12 sub-domains):** When `selected_domain.elements` is non-empty, `🌤️_Assessment.py` skips the single ladder entirely and instead:
   * Renders each element in its own expander with a `st.radio` limited to that element's `applicable_levels` (not always 0-4) — one independent judgement call per track, keyed as `f"{fa_id}::{sub_domain}::{element_id}::declared_level"`.
   * After collecting all declared levels, calls `compute_sub_domain_element_score` and surfaces a `st.warning` for any element whose effective level was capped by a `Gate`, naming the required element/level.
   * Shows one weighted `st.progress` bar and score caption for the whole sub-domain — there is no per-level stepper/ladder in this path, since elements don't share a single level axis.
@@ -107,9 +107,9 @@ sub_domains:
 ### 4. Code Structure / Module Boundaries
 * `data_loader.py` — YAML → unified `FocusArea` model, cached parsing only.
 * `scoring.py` — pure hierarchical scoring functions (no Streamlit imports), unit-testable.
-* `institutes.py` — the `INSTITUTES: dict[id, display_name]` constant shared by `app.py` and `pages/*.py`. Single source of truth for which NMHSs the tool supports.
+* `institutes.py` — the `INSTITUTES: dict[id, display_name]` constant shared by `🌤️_Assessment.py` and `pages/*.py`. Single source of truth for which NMHSs the tool supports.
 * `storage.py` — pure file-based persistence (no Streamlit imports), unit-testable like `scoring.py`. Reads/writes one YAML file per institute under `saved/` (e.g. `saved/UKMO.yaml`), never a database — this matches the project's existing YAML-as-source-of-truth convention and keeps saved assessments human-readable and diffable in git. One row/file per institute (not append-only history): saving overwrites the prior file, gated by an explicit confirm-before-overwrite prompt in the UI (see below).
-* `app.py` — Streamlit UI only: institute selector, save/load controls, navigation, level ladder / element rendering, dashboard/radar chart. Consumes `data_loader`, `scoring`, `institutes`, and `storage`, contains no parsing, scoring, or persistence logic of its own.
+* `🌤️_Assessment.py` — Streamlit UI only, and the app's entrypoint (`streamlit run "🌤️_Assessment.py"`; the emoji-prefixed filename gives the sidebar nav a proper icon + label instead of the default "app"): institute selector, save/load controls, navigation, level ladder / element rendering, dashboard/radar chart. Consumes `data_loader`, `scoring`, `institutes`, and `storage`, contains no parsing, scoring, or persistence logic of its own.
 * `pages/1_Saved_Assessments.py` — a second Streamlit page (native multipage app, auto-discovered from `pages/`) that is read-only: lists every saved institute (assessor, timestamp, avg score), and lets the user pick 2+ institutes to overlay on a comparison radar chart. It never mutates `st.session_state` — to continue editing a saved assessment, use the "Load saved assessment" button on the main page instead.
 
 ### 5. Multi-Institute Support & Persistence
@@ -117,6 +117,7 @@ sub_domains:
 * **Save:** An "Assessor name" free-text field (no auth) plus a "💾 Save this assessment" button. On click, all `st.session_state` entries prefixed `f"{institute}::"` are collected verbatim (declared levels, checked criteria) alongside the already-computed `scores_summary` rows, and written via `storage.save_assessment`. If a save already exists for that institute, the UI shows who saved it and when and requires an explicit "Yes, overwrite" click — saves are never silently clobbered.
 * **Load:** A "📂 Load saved assessment" button (enabled only if a save exists for the selected institute) copies the saved `answers` dict back into `st.session_state` and reruns, restoring every declared level/checkbox exactly as saved.
 * **Compare:** `pages/1_Saved_Assessments.py` is the shared, read-only view for showing teammates what each institute chose — an overview table plus a multi-institute radar overlay, so several people assessing different institutes (or the same institute at different times) can see and compare results without needing a database.
+* **Export / Import (client-side, no server storage):** Sidebar controls let an assessor download their current in-progress answers as a YAML file (`storage.export_yaml`, same shape as a server-side save) and later re-upload it (`storage.import_yaml`) to restore that session — on this machine, another deployment, or after clearing browser state. Import re-namespaces the file's `answers` to the *currently selected* institute regardless of which institute it was originally exported for, showing a warning on mismatch rather than blocking the import. Malformed or non-export uploads raise a `ValueError`, surfaced as a sidebar error instead of crashing the app. This is independent of, and does not touch, the `saved/` on-disk store.
 
 ---
 
@@ -125,7 +126,7 @@ sub_domains:
 ```text
 .
 ├── AGENTS.md
-├── app.py
+├── 🌤️_Assessment.py
 ├── data_loader.py
 ├── scoring.py
 ├── institutes.py
@@ -159,15 +160,4 @@ pip install -r requirements.txt
 
 ## Agent Workflow: Commit Messages
 
-After implementing a change (or a batch of related changes), always end the turn by
-providing a ready-to-paste commit command — do not wait to be asked. Format:
-
-```bash
-git add -A
-git commit -F - <<'EOF'
-Short imperative title (<= 60 chars)
-
-- Bullet per notable change, concise
-- ...
-EOF
-```
+When asked for a commit message provide a ready-to-paste commit command with Format: Short imperative title and concise bullet points.
