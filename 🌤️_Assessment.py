@@ -25,6 +25,10 @@ st.markdown(
     h2 { font-size: 1.8rem !important; }
     h3 { font-size: 1.5rem !important; }
     h1, h2, h3 { line-height: 1.35; }
+    [data-testid="stSidebar"] h2 { font-size: 1.05rem !important; margin-top: 0.5rem !important; margin-bottom: 0.25rem !important; text-transform: uppercase; letter-spacing: 0.03em; opacity: 0.8; }
+    [data-testid="stSidebar"] [data-testid="stFileUploaderDropzoneInstructions"] { display: none !important; }
+    [data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] { border: none !important; background: transparent !important; padding: 0 !important; }
+    [data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] button { width: 100% !important; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -38,6 +42,17 @@ model = load_model()
 if not model:
     st.error("YAML data files not found. Please place fa1.yaml, fa2.yaml, and fa3.yaml in the working directory.")
     st.stop()
+
+items = chain_items(model)  # flat (FocusArea, SubDomain) list ordered by sequence, 1..12
+
+# Sidebar Navigation — one flat, ordered list across the whole chain.
+st.sidebar.header("Navigation")
+selected_fa, selected_domain = st.sidebar.selectbox(
+    "Select a topic",
+    options=items,
+    format_func=lambda pair: f"{pair[1].sequence:02d}. {short_stage(pair[1].chain_stage)} — {pair[1].name}",
+)
+st.sidebar.caption(f"Owner: {selected_fa.id} — {selected_fa.title}")
 
 # Met Institute selector — every session_state key below is namespaced by
 # this so switching institutes keeps each one's answers separate. The ✅/▫️
@@ -111,8 +126,9 @@ if st.session_state.get("_pending_overwrite") and existing_save is not None:
 # disk: lets an assessor take their session home, or resume it on another
 # machine/deployment, without needing server-side storage at all.
 current_answers = {k: v for k, v in st.session_state.items() if str(k).startswith(f"{selected_institute}::")}
-st.sidebar.download_button(
-    "⬇️ Export session as YAML",
+export_col, import_col = st.sidebar.columns(2)
+export_col.download_button(
+    "⬇️ Export",
     data=storage.export_yaml(selected_institute, assessor_name, current_answers),
     file_name=f"{selected_institute}_assessment.yaml",
     mime="application/x-yaml",
@@ -120,8 +136,8 @@ st.sidebar.download_button(
     disabled=not current_answers,
 )
 
-uploaded_file = st.sidebar.file_uploader(
-    "⬆️ Import a YAML export", type=["yaml", "yml"], label_visibility="collapsed"
+uploaded_file = import_col.file_uploader(
+    "⬆️ Import", type=["yaml", "yml"], label_visibility="collapsed"
 )
 if uploaded_file is not None:
     try:
@@ -151,8 +167,6 @@ def declared_level_key(institute: str, fa_id: str, sub_domain_name: str) -> str:
 def element_level_key(institute: str, fa_id: str, sub_domain_name: str, element_id: str) -> str:
     return f"{institute}::{fa_id}::{sub_domain_name}::{element_id}::declared_level"
 
-
-items = chain_items(model)  # flat (FocusArea, SubDomain) list ordered by sequence, 1..12
 
 # Compute scores across the whole chain once, used by both the chain overview
 # chart and the sub-domain drill-down / final dashboard below. Shared with the
@@ -192,15 +206,6 @@ fig_chain.add_vline(x=3.0, line_dash="dash", line_color="red", annotation_text="
 fig_chain.update_layout(height=450, legend_title_text="Chain Stage")
 st.plotly_chart(fig_chain, width="stretch")
 st.divider()
-
-# Sidebar Navigation — one flat, ordered list across the whole chain.
-st.sidebar.header("Navigation")
-selected_fa, selected_domain = st.sidebar.selectbox(
-    "Select a topic",
-    options=items,
-    format_func=lambda pair: f"{pair[1].sequence:02d}. {short_stage(pair[1].chain_stage)} — {pair[1].name}",
-)
-st.sidebar.caption(f"Owner: {selected_fa.id} — {selected_fa.title}")
 
 # Main Form Area
 st.subheader(f"{selected_domain.sequence:02d}. {selected_domain.chain_stage} ➔ {selected_domain.name}")
