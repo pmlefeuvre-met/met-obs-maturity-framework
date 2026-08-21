@@ -108,6 +108,7 @@ sub_domains:
 * `data_loader.py` — YAML → unified `FocusArea` model, cached parsing only.
 * `scoring.py` — pure hierarchical scoring functions (no Streamlit imports), unit-testable.
 * `institutes.py` — the `INSTITUTES: dict[id, display_name]` constant shared by `🌤️_Assessment.py` and `pages/*.py`. Single source of truth for which NMHSs the tool supports.
+* `theme.py` — `apply_custom_css()`, one shared Streamlit CSS injection (font size / line-height bump, sidebar header/file-uploader styling) called near the top of `🌤️_Assessment.py` and every page under `pages/`, so the two copies can't drift out of sync.
 * `storage.py` — pure file-based persistence (no Streamlit imports), unit-testable like `scoring.py`. Reads/writes one YAML file per institute under `saved/` (e.g. `saved/UKMO.yaml`), never a database — this matches the project's existing YAML-as-source-of-truth convention and keeps saved assessments human-readable and diffable in git. One row/file per institute (not append-only history): saving overwrites the prior file, gated by an explicit confirm-before-overwrite prompt in the UI (see below).
 * `🌤️_Assessment.py` — Streamlit UI only, and the app's entrypoint (`streamlit run "🌤️_Assessment.py"`; the emoji-prefixed filename gives the sidebar nav a proper icon + label instead of the default "app"): institute selector, save/load controls, navigation, level ladder / element rendering. Consumes `data_loader`, `scoring`, `institutes`, and `storage`, contains no parsing, scoring, or persistence logic of its own.
 * `pages/1_Overview.py` — a second Streamlit page (native multipage app, auto-discovered from `pages/`, labeled "Overview" in the sidebar nav) that is read-only: it never mutates `st.session_state`. On top, it renders the live chain-overview bar chart, dashboard table, and radar chart for whichever institute is currently selected on the main page (reading `st.session_state["selected_institute"]`, shared across pages in the same session) — this is where those charts live now, not on the Assessment page itself, keeping the main page focused on data entry. Below that, it lists every saved institute (assessor, timestamp, avg score) and lets the user pick 2+ institutes to overlay on a comparison radar chart. To continue editing a saved assessment, use the "Load saved assessment" button on the main page instead.
@@ -130,6 +131,7 @@ sub_domains:
 ├── data_loader.py
 ├── scoring.py
 ├── institutes.py
+├── theme.py
 ├── storage.py
 ├── pages/
 │   └── 1_Overview.py

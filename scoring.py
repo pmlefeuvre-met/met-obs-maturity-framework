@@ -24,9 +24,73 @@ SHORT_STAGE_LABELS = {
     "Network Design and Strategic Lifecycle Planning": "Network Design",
 }
 
+# One colored emoji glyph per chain_stage -- a cheap, font-independent way
+# to visually group the 12 sub-domains by stage in a plain-text sidebar
+# selectbox (which can't do per-option CSS/HTML). Colors are the closest
+# available glyph match to the dual pastel/bold palette (see STAGE_COLOR_HEX)
+# so the sidebar and the chain-overview chart read as the same palette;
+# shape (circle/square/diamond/heart) is just used to get 8 distinct glyphs
+# out of a limited emoji set and to hint at the light/dark pairing, not a
+# meaningful distinction on its own.
+STAGE_COLOR_DOTS = {
+    "Physical and Metrological Foundation": "\U0001f7e6",  # blue square
+    "Network Infrastructure and Field Maintenance": "\U0001F535",  # blue circle
+    "Real-Time Data Ingestion and Processing": "\U0001f7e5",  # red square
+    "Automated Data Quality Checkpoints": "\U0001f534",  # red circle
+    "Manual Data Quality Control and Expert Review": "\U0001f7e9",  # green square
+    "Siting, Exposure, and Environmental Classification": "\U0001F7E2",  # green circle
+    "Metadata Lifecycle and System Synchronization": "\U0001f7e8",  # yellow square
+    "Network Design and Strategic Lifecycle Planning": "\U0001F7E0",  # orange circle
+}
+
+# Dual pastel/bold palette -- each hue pairs a light (pastel) shade with a
+# bold shade for the next stage in the same family (light blue -> blue,
+# light red -> red, light green -> green), plus yellow/orange to round out
+# the 8 stages. This is the classic ColorBrewer "Paired" qualitative set.
+STAGE_COLOR_HEX = {
+    "Physical and Metrological Foundation": "#A6CEE3",  # light blue
+    "Network Infrastructure and Field Maintenance": "#1F78B4",  # blue
+    "Real-Time Data Ingestion and Processing": "#FB9A99",  # light red
+    "Automated Data Quality Checkpoints": "#E31A1C",  # red
+    "Manual Data Quality Control and Expert Review": "#B2DF8A",  # light green
+    "Siting, Exposure, and Environmental Classification": "#33A02C",  # green
+    "Metadata Lifecycle and System Synchronization": "#FFFF99",  # yellow
+    "Network Design and Strategic Lifecycle Planning": "#FF7F00",  # orange
+}
+
+# Short, fixed-width nav labels for the 12 sub-domains, keyed by their
+# unique `sequence` (1..12) rather than name so renames in the YAML source
+# text don't silently break the sidebar dropdown.
+SHORT_TOPIC_LABELS = {
+    1: "01_Calibration",
+    2: "02_Procurement",
+    3: "03_Lifecycle",
+    4: "04_Maintenance",
+    5: "05_Staff",
+    6: "06_DataProcessing",
+    7: "07_QualityControl",
+    8: "08_Performance",
+    9: "09_Expert",
+    10: "10_Site",
+    11: "11_Metadata",
+    12: "12_Network",
+}
+
 
 def short_stage(stage: str) -> str:
     return SHORT_STAGE_LABELS.get(stage, stage)
+
+
+def stage_color_dot(stage: str) -> str:
+    return STAGE_COLOR_DOTS.get(stage, "\u26AA")
+
+
+def stage_color_hex(stage: str) -> str:
+    return STAGE_COLOR_HEX.get(stage, "#9e9e9e")
+
+
+def short_topic(sequence: int) -> str:
+    return SHORT_TOPIC_LABELS.get(sequence, f"{sequence:02d}")
 
 
 @dataclass(frozen=True)
@@ -154,15 +218,12 @@ def score_all(model: list[FocusArea], institute: str, get: StateGet) -> list[dic
                 for el in sd.elements
             }
             final_score = compute_sub_domain_element_score(sd, declared_levels).final_score
-            completion_pct = 0.0
         else:
             declared = int(get(f"{institute}::{fa.id}::{sd.name}::declared_level", 0))
             is_checked = lambda score, idx, fa=fa, sd=sd: bool(
                 get(f"{institute}::{fa.id}::{sd.name}::L{score}::{idx}", False)
             )
-            sd_result = compute_sub_domain_score(sd, declared, is_checked)
-            final_score = sd_result.final_score
-            completion_pct = sd_result.completion_pct
+            final_score = compute_sub_domain_score(sd, declared, is_checked).final_score
         rows.append({
             "Sequence": sd.sequence,
             "Chain Stage": sd.chain_stage,
@@ -170,7 +231,5 @@ def score_all(model: list[FocusArea], institute: str, get: StateGet) -> list[dic
             "Focus Area": fa.id,
             "Sub-Domain": sd.name,
             "Achieved Score": final_score,
-            "Target Score": 3.0,  # Best Practice Target
-            "Progress to Next %": f"{completion_pct}%",
         })
     return rows

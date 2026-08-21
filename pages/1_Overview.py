@@ -14,8 +14,9 @@ import streamlit as st
 
 from data_loader import chain_items, load_model
 from institutes import INSTITUTES
-from scoring import score_all
+from scoring import score_all, stage_color_hex
 from storage import list_assessments
+from theme import apply_custom_css
 
 
 def _long_name(institute_id: str) -> str:
@@ -23,6 +24,8 @@ def _long_name(institute_id: str) -> str:
     return institute.long if institute else institute_id
 
 st.set_page_config(page_title="Overview", layout="wide")
+
+apply_custom_css()
 
 st.title("📊 Overview")
 
@@ -36,11 +39,16 @@ st.caption("Live figures for the institute currently selected on the Assessment 
 scores_summary = score_all(model, selected_institute, st.session_state.get)
 df_summary = pd.DataFrame(scores_summary).sort_values("Sequence")
 
+# Same stage -> color mapping used for the sidebar nav's colored dots, so a
+# stage looks the same color here as it does in the Assessment page's list.
+stage_colors = dict(zip(df_summary["Stage (short)"], df_summary["Chain Stage"].map(stage_color_hex)))
+
 fig_chain = px.bar(
     df_summary,
     x="Achieved Score",
     y="Sub-Domain",
     color="Stage (short)",
+    color_discrete_map=stage_colors,
     orientation="h",
     range_x=[0, 4],
     category_orders={"Sub-Domain": df_summary["Sub-Domain"].tolist()[::-1]},
@@ -55,7 +63,7 @@ col1, col2 = st.columns([1, 1])
 
 with col1:
     st.dataframe(
-        df_summary[['Sequence', 'Chain Stage', 'Sub-Domain', 'Achieved Score', 'Target Score', 'Progress to Next %']],
+        df_summary[['Sequence', 'Sub-Domain', 'Achieved Score']],
         width="stretch",
         hide_index=True,
     )

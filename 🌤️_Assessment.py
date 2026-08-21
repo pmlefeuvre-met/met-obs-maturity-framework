@@ -1,36 +1,15 @@
 import streamlit as st
 
 from data_loader import load_model, chain_items
-from scoring import compute_sub_domain_score, compute_sub_domain_element_score, short_stage
+from scoring import compute_sub_domain_score, compute_sub_domain_element_score, short_stage, short_topic, stage_color_dot
 from institutes import INSTITUTES
+from theme import apply_custom_css
 import storage
 
 
 st.set_page_config(page_title="Meteorological Maturity Assessment Tool", layout="wide")
 
-# Readability: bump font size / line-height beyond Streamlit defaults.
-st.markdown(
-    """
-    <style>
-    html, body, [class*="st-"] { font-size: 1.15rem !important; }
-    div[data-testid="stMarkdownContainer"] p, div[data-testid="stMarkdownContainer"] li { font-size: 1.15rem !important; line-height: 1.6 !important; }
-    div[data-testid="stCaptionContainer"] p { font-size: 1.05rem !important; line-height: 1.5 !important; }
-    div[data-testid="stCheckbox"] label p { font-size: 1.15rem !important; line-height: 1.6 !important; }
-    div[data-testid="stRadio"] label p { font-size: 1.15rem !important; line-height: 1.6 !important; }
-    div[data-testid="stExpander"] summary p { font-size: 1.2rem !important; }
-    div[data-testid="stDataFrame"] * { font-size: 1.05rem !important; }
-    h1 { font-size: 2.3rem !important; }
-    h2 { font-size: 1.8rem !important; }
-    h3 { font-size: 1.5rem !important; }
-    h1, h2, h3 { line-height: 1.35; }
-    [data-testid="stSidebar"] h2 { font-size: 1.05rem !important; margin-top: 0.5rem !important; margin-bottom: 0.25rem !important; text-transform: uppercase; letter-spacing: 0.03em; opacity: 0.8; }
-    [data-testid="stSidebar"] [data-testid="stFileUploaderDropzoneInstructions"] { display: none !important; }
-    [data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] { border: none !important; background: transparent !important; padding: 0 !important; }
-    [data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] button { width: 100% !important; }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+apply_custom_css()
 
 st.title("🌤️ Meteorological Observation Maturity Assessment Tool")
 st.caption("A Capability Maturity Model Integration evaluates local land surface observing practices against WMO and international standards across the full observational lifecycle to ensure data is traceable, sustainable, and fit for purpose.")
@@ -43,13 +22,17 @@ if not model:
 
 items = chain_items(model)  # flat (FocusArea, SubDomain) list ordered by sequence, 1..12
 
-# Sidebar Navigation — one flat, ordered list across the whole chain.
+# Sidebar Navigation — one flat, ordered list across the whole chain. Options
+# use short fixed labels (not the full chain-stage name, which made entries
+# too long to read) with a colored dot prefix so the 8 chain stages are still
+# visually distinguishable at a glance.
 st.sidebar.header("Navigation")
 selected_fa, selected_domain = st.sidebar.selectbox(
     "Select a topic",
     options=items,
-    format_func=lambda pair: f"{pair[1].sequence:02d}. {short_stage(pair[1].chain_stage)} — {pair[1].name}",
+    format_func=lambda pair: f"{stage_color_dot(pair[1].chain_stage)} {short_topic(pair[1].sequence)}",
 )
+st.sidebar.caption(f"Stage: {selected_domain.chain_stage}")
 st.sidebar.caption(f"Owner: {selected_fa.id} — {selected_fa.title}")
 
 # Met Institute selector — every session_state key below is namespaced by
