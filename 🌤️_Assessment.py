@@ -32,8 +32,7 @@ selected_fa, selected_domain = st.sidebar.selectbox(
     options=items,
     format_func=lambda pair: f"{stage_color_dot(pair[1].chain_stage)} {short_topic(pair[1].sequence)}",
 )
-st.sidebar.caption(f"Stage: {selected_domain.chain_stage}")
-st.sidebar.caption(f"Owner: {selected_fa.id} — {selected_fa.title}")
+#st.sidebar.caption(f"Owner: {selected_fa.id — {selected_fa.title}}") 
 
 # Met Institute selector — every session_state key below is namespaced by
 # this so switching institutes keeps each one's answers separate. The ✅/▫️
