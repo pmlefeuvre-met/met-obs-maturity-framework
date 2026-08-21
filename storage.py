@@ -84,21 +84,23 @@ def _add_prefix(institute: str, answers: dict) -> dict:
 
 
 # Full sub-domain name -> short slug, for on-disk/export key readability only.
+# Matches the one-word nav labels in scoring.SHORT_TOPIC_LABELS (stripped of
+# their "NN_" sequence prefix) so the same short name is used everywhere.
 # Static (not derived from the YAML content) since it must stay stable across
 # saves; update alongside fa1/fa2/fa3.yaml if a sub-domain is ever renamed.
 _SUBDOMAIN_SLUGS: dict[str, str] = {
-    "Calibration and Traceability": "calibration_traceability",
+    "Calibration and Traceability": "calibration",
     "Procurement": "procurement",
-    "Lifecycle Mgmt and Replacement": "lifecycle_mgmt_replacement",
-    "Sensor and Station Maintenance": "sensor_station_maintenance",
-    "Staff Competence and Training": "staff_competence_training",
-    "Data Processing": "data_processing",
-    "Quality Control": "quality_control",
-    "Expert Review & LTQM": "expert_review_ltqm",
-    "Performance Monitoring": "performance_monitoring",
-    "Site Management": "site_management",
-    "Metadata and Data Stewardship": "metadata_data_stewardship",
-    "Network Design and Lifecycle": "network_design_lifecycle",
+    "Lifecycle Mgmt and Replacement": "lifecycle",
+    "Sensor and Station Maintenance": "maintenance",
+    "Staff Competence and Training": "staff",
+    "Data Processing": "dataprocessing",
+    "Quality Control": "qualitycontrol",
+    "Expert Review & LTQM": "expert",
+    "Performance Monitoring": "performance",
+    "Site Management": "site",
+    "Metadata and Data Stewardship": "metadata",
+    "Network Design and Lifecycle": "network",
 }
 _SUBDOMAIN_NAMES: dict[str, str] = {slug: name for name, slug in _SUBDOMAIN_SLUGS.items()}
 
