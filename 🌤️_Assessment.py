@@ -1,9 +1,7 @@
 import streamlit as st
-import pandas as pd
-import plotly.express as px
 
 from data_loader import load_model, chain_items
-from scoring import compute_sub_domain_score, compute_sub_domain_element_score, score_all, short_stage
+from scoring import compute_sub_domain_score, compute_sub_domain_element_score, short_stage
 from institutes import INSTITUTES
 import storage
 
@@ -168,14 +166,9 @@ def element_level_key(institute: str, fa_id: str, sub_domain_name: str, element_
     return f"{institute}::{fa_id}::{sub_domain_name}::{element_id}::declared_level"
 
 
-# Compute scores across the whole chain once, used by both the chain overview
-# chart and the sub-domain drill-down / final dashboard below. Shared with the
-# read-only Saved Assessments page so scores are never persisted to disk.
-scores_summary = score_all(model, selected_institute, st.session_state.get)
-df_summary = pd.DataFrame(scores_summary).sort_values("Sequence")
-
-# Deferred save — placed after scores_summary purely for layout convenience;
-# saving itself only needs the raw answers (scores are recomputed on load).
+# Deferred save — placed here for layout convenience; saving itself only
+# needs the raw answers (scores are recomputed on load, and shown on the
+# Overview page rather than here).
 if st.session_state.pop("_do_save", False):
     session_answers = {k: v for k, v in st.session_state.items() if str(k).startswith(f"{selected_institute}::")}
     # Merge over the previous save so a partial session (e.g. an assessor who
@@ -185,27 +178,6 @@ if st.session_state.pop("_do_save", False):
     answers = {**prior_answers, **session_answers}
     storage.save_assessment(selected_institute, assessor_name, answers)
     st.sidebar.success(f"Saved for {INSTITUTES[selected_institute].short}.")
-
-# Observation Chain Overview — the whole evaluation as one connected sequence,
-# so a weak link anywhere in the chain is visible at a glance.
-st.markdown("## 🔗 Observation Chain Overview")
-st.caption("Ordered end-to-end from instrument foundations through network design. Bars are grouped by chain stage; FA labels are just the ownership split.")
-
-fig_chain = px.bar(
-    df_summary,
-    x="Achieved Score",
-    y="Sub-Domain",
-    color="Stage (short)",
-    orientation="h",
-    range_x=[0, 4],
-    category_orders={"Sub-Domain": df_summary["Sub-Domain"].tolist()[::-1]},
-    text="Achieved Score",
-    hover_data={"Chain Stage": True, "Stage (short)": False},
-)
-fig_chain.add_vline(x=3.0, line_dash="dash", line_color="red", annotation_text="Level 3 Target")
-fig_chain.update_layout(height=450, legend_title_text="Chain Stage")
-st.plotly_chart(fig_chain, width="stretch")
-st.divider()
 
 # Main Form Area
 st.subheader(f"{selected_domain.sequence:02d}. {selected_domain.chain_stage} ➔ {selected_domain.name}")
@@ -324,34 +296,5 @@ else:
 
     st.divider()
 
-# Dashboard Summary View
-st.markdown("## 📊 Live Assessment Dashboard")
-st.caption(f"Institute: **{INSTITUTES[selected_institute].long}**")
-
-col1, col2 = st.columns([1, 1])
-
-with col1:
-    st.dataframe(
-        df_summary[['Sequence', 'Chain Stage', 'Sub-Domain', 'Achieved Score', 'Target Score', 'Progress to Next %']],
-        width="stretch",
-        hide_index=True,
-    )
-
-with col2:
-    # Interactive Radar / Spider Chart
-    fig = px.line_polar(
-        df_summary, 
-        r='Achieved Score', 
-        theta='Sub-Domain', 
-        line_close=True,
-        range_r=[0, 4],
-        title="Maturity Profile vs. Best Practice Target (Level 3)"
-    )
-    fig.add_scatterpolar(
-        r=[3.0] * len(df_summary),
-        theta=df_summary['Sub-Domain'],
-        name="Best Practice Target (Level 3)",
-        line=dict(dash='dash', color='red')
-    )
-    st.plotly_chart(fig, width="stretch")
+st.caption("See the **Overview** page in the sidebar for the live chain chart, dashboard table, and radar chart.")
 

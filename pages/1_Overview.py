@@ -1,7 +1,11 @@
-"""Read-only view of saved institute assessments: list + compare.
+"""Overview: current live figures/tables for the selected institute on top,
+saved-assessments list + compare below.
 
-To continue editing a saved assessment, use the "Load saved assessment"
-button on the main page (this page does not modify session_state).
+The live section reflects in-progress st.session_state answers (shared
+across pages in the same session) so it always matches the Assessment page,
+even before anything is saved. The saved section stays read-only -- to
+continue editing a saved assessment, use the "Load saved assessment" button
+on the main page (this page does not modify session_state).
 """
 
 import pandas as pd
@@ -18,9 +22,65 @@ def _long_name(institute_id: str) -> str:
     institute = INSTITUTES.get(institute_id)
     return institute.long if institute else institute_id
 
-st.set_page_config(page_title="Saved Assessments", layout="wide")
+st.set_page_config(page_title="Overview", layout="wide")
 
-st.title("📁 Saved Assessments")
+st.title("📊 Overview")
+
+model = load_model()
+
+# --- Current session (live, unsaved answers included) -------------------
+selected_institute = st.session_state.get("selected_institute") or next(iter(INSTITUTES))
+st.markdown(f"## 🔗 Current Session — {INSTITUTES[selected_institute].long}")
+st.caption("Live figures for the institute currently selected on the Assessment page. Ordered end-to-end from instrument foundations through network design.")
+
+scores_summary = score_all(model, selected_institute, st.session_state.get)
+df_summary = pd.DataFrame(scores_summary).sort_values("Sequence")
+
+fig_chain = px.bar(
+    df_summary,
+    x="Achieved Score",
+    y="Sub-Domain",
+    color="Stage (short)",
+    orientation="h",
+    range_x=[0, 4],
+    category_orders={"Sub-Domain": df_summary["Sub-Domain"].tolist()[::-1]},
+    text="Achieved Score",
+    hover_data={"Chain Stage": True, "Stage (short)": False},
+)
+fig_chain.add_vline(x=3.0, line_dash="dash", line_color="red", annotation_text="Level 3 Target")
+fig_chain.update_layout(height=450, legend_title_text="Chain Stage")
+st.plotly_chart(fig_chain, width="stretch")
+
+col1, col2 = st.columns([1, 1])
+
+with col1:
+    st.dataframe(
+        df_summary[['Sequence', 'Chain Stage', 'Sub-Domain', 'Achieved Score', 'Target Score', 'Progress to Next %']],
+        width="stretch",
+        hide_index=True,
+    )
+
+with col2:
+    fig = px.line_polar(
+        df_summary,
+        r='Achieved Score',
+        theta='Sub-Domain',
+        line_close=True,
+        range_r=[0, 4],
+        title="Maturity Profile vs. Best Practice Target (Level 3)"
+    )
+    fig.add_scatterpolar(
+        r=[3.0] * len(df_summary),
+        theta=df_summary['Sub-Domain'],
+        name="Best Practice Target (Level 3)",
+        line=dict(dash='dash', color='red')
+    )
+    st.plotly_chart(fig, width="stretch")
+
+st.divider()
+
+# --- Saved assessments (read-only) ---------------------------------------
+st.markdown("## 📁 Saved Assessments")
 st.caption("One saved record per institute. Switch to the main page to save, load, or edit an assessment.")
 
 assessments = list_assessments()
@@ -28,8 +88,6 @@ assessments = list_assessments()
 if not assessments:
     st.info("No institute has saved an assessment yet.")
     st.stop()
-
-model = load_model()
 
 summary_rows = []
 for a in assessments:
@@ -44,7 +102,6 @@ for a in assessments:
         "Sub-Domains at Target (≥3)": f"{on_target} / {len(scores_df)}" if not scores_df.empty else "0 / 0",
     })
 
-st.markdown("## Overview")
 st.dataframe(pd.DataFrame(summary_rows), width="stretch", hide_index=True)
 
 st.divider()
@@ -92,3 +149,4 @@ if len(selected_ids) >= 1:
     st.plotly_chart(fig, width="stretch")
 else:
     st.caption("Select at least one institute above to see its radar chart.")
+
