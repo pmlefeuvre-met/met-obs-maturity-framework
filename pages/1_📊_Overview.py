@@ -3,9 +3,13 @@ saved-assessments list + compare below.
 
 The live section reflects in-progress st.session_state answers (shared
 across pages in the same session) so it always matches the Assessment page,
-even before anything is saved. The saved section stays read-only -- to
-continue editing a saved assessment, use the "Load saved assessment" button
-on the main page (this page does not modify session_state).
+even before anything is saved. The saved-assessments section stays read-only
+-- to continue editing a saved assessment, use the "Load saved assessment"
+button on the main page. This page's sidebar does share the institute
+selector and Export/Import controls with the Assessment page (via
+sidebar.py) -- switching institute or applying an import does update
+session_state -- but Save/Load (server-side, with assessor name + overwrite
+confirmation) remains Assessment-page-only.
 """
 
 import pandas as pd
@@ -17,6 +21,7 @@ from institutes import INSTITUTES
 from scoring import score_all, stage_color_hex
 from storage import list_assessments
 from theme import apply_custom_css
+import sidebar as sidebar_ui
 
 
 def _long_name(institute_id: str) -> str:
@@ -31,10 +36,18 @@ st.title("📊 Overview")
 
 model = load_model()
 
+# Institute selector + auto-load + Export/Import -- shared with the
+# Assessment page so switching institute here also updates it there (and
+# vice versa), and progress survives a server restart without a manual Load.
+selected_institute = sidebar_ui.render_institute_selector()
+sidebar_ui.hydrate_from_saved(selected_institute)
+current_answers = {k: v for k, v in st.session_state.items() if str(k).startswith(f"{selected_institute}::")}
+sidebar_ui.render_export_import(selected_institute, "", current_answers)
+st.sidebar.divider()
+
 # --- Current session (live, unsaved answers included) -------------------
-selected_institute = st.session_state.get("selected_institute") or next(iter(INSTITUTES))
 st.markdown(f"## 🔗 Current Session — {INSTITUTES[selected_institute].long}")
-st.caption("Live figures for the institute currently selected on the Assessment page. Ordered end-to-end from instrument foundations through network design.")
+st.caption("Live figures for the institute currently selected in the sidebar. Ordered end-to-end from instrument foundations through network design.")
 
 scores_summary = score_all(model, selected_institute, st.session_state.get)
 df_summary = pd.DataFrame(scores_summary).sort_values("Sequence")

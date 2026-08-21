@@ -5,6 +5,7 @@ from scoring import compute_sub_domain_score, compute_sub_domain_element_score, 
 from institutes import INSTITUTES
 from theme import apply_custom_css
 import storage
+import sidebar as sidebar_ui
 
 
 st.set_page_config(page_title="Meteorological Maturity Assessment Tool", layout="wide")
@@ -35,22 +36,14 @@ selected_fa, selected_domain = st.sidebar.selectbox(
 #st.sidebar.caption(f"Owner: {selected_fa.id — {selected_fa.title}}") 
 
 # Met Institute selector — every session_state key below is namespaced by
-# this so switching institutes keeps each one's answers separate. The ✅/▫️
-# prefix flags which institutes already have a saved assessment on disk.
-def _institute_option_label(key: str) -> str:
-    mark = "✅ " if storage.get_assessment(key) is not None else "▫️ "
-    return mark + INSTITUTES[key].short
+# this so switching institutes keeps each one's answers separate. Shared with
+# the Overview page via sidebar.py so the two copies can't drift.
+selected_institute = sidebar_ui.render_institute_selector()
 
-
-st.sidebar.header("Institute")
-selected_institute = st.sidebar.selectbox(
-    "NMHS",
-    options=list(INSTITUTES.keys()),
-    format_func=_institute_option_label,
-    key="selected_institute",
-    label_visibility="collapsed",
-)
-st.caption(f"Institute: **{INSTITUTES[selected_institute].long}**")
+# Hydrate once per rerun: if this institute has a saved file, merge any
+# missing answers into session_state before rendering the current stage, so
+# switching stages/pages never shows a blank form for already-declared work.
+sidebar_ui.hydrate_from_saved(selected_institute)
 
 # Save / Load — persists to saved/<institute>.yaml (see storage.py). Saving
 # never silently clobbers another assessor's work: an existing save requires
@@ -104,33 +97,10 @@ if st.session_state.get("_pending_overwrite") and existing_save is not None:
 
 # Export / Import — a client-side YAML round trip independent of saved/ on
 # disk: lets an assessor take their session home, or resume it on another
-# machine/deployment, without needing server-side storage at all.
+# machine/deployment, without needing server-side storage at all. Shared
+# with the Overview page via sidebar.py.
 current_answers = {k: v for k, v in st.session_state.items() if str(k).startswith(f"{selected_institute}::")}
-export_col, import_col = st.sidebar.columns(2)
-export_col.download_button(
-    "⬇️ Export",
-    data=storage.export_yaml(selected_institute, assessor_name, current_answers),
-    file_name=f"{selected_institute}_assessment.yaml",
-    mime="application/x-yaml",
-    width="stretch",
-    disabled=not current_answers,
-)
-
-uploaded_file = import_col.file_uploader(
-    "⬆️ Import", type=["yaml", "yml"], label_visibility="collapsed"
-)
-if uploaded_file is not None:
-    try:
-        imported = storage.import_yaml(uploaded_file.getvalue().decode("utf-8"), selected_institute)
-    except ValueError:
-        st.sidebar.error("Could not read that file — is it a valid exported assessment YAML?")
-    else:
-        if imported.institute != selected_institute:
-            source_label = INSTITUTES[imported.institute].short if imported.institute in INSTITUTES else imported.institute
-            st.sidebar.warning(f"File was exported for {source_label} — will be applied to {INSTITUTES[selected_institute].short}.")
-        if st.sidebar.button("Apply imported answers", width="stretch"):
-            st.session_state.update(imported.answers)
-            st.rerun()
+sidebar_ui.render_export_import(selected_institute, assessor_name, current_answers)
 
 st.sidebar.divider()
 
@@ -146,6 +116,10 @@ def declared_level_key(institute: str, fa_id: str, sub_domain_name: str) -> str:
 
 def element_level_key(institute: str, fa_id: str, sub_domain_name: str, element_id: str) -> str:
     return f"{institute}::{fa_id}::{sub_domain_name}::{element_id}::declared_level"
+
+
+def comment_key(institute: str, fa_id: str, sub_domain_name: str, element_id: str) -> str:
+    return f"{institute}::{fa_id}::{sub_domain_name}::{element_id}::comment"
 
 
 # Deferred save — placed here for layout convenience; saving itself only
@@ -175,9 +149,10 @@ if selected_domain.elements:
     )
 
     declared_levels: dict[str, int] = {}
-    for element in selected_domain.elements:
+    for idx, element in enumerate(selected_domain.elements, start=1):
         options = list(element.applicable_levels)
-        with st.expander(f"🔹 {element.title}", expanded=True):
+        subsection_number = f"{selected_domain.sequence}.{idx}"
+        with st.expander(f"🔹 {subsection_number} {element.title}", expanded=True):
             declared = st.radio(
                 element.title,
                 options=options,
@@ -186,6 +161,11 @@ if selected_domain.elements:
                 label_visibility="collapsed",
             )
             declared_levels[element.id] = declared
+            st.text_area(
+                "Comment / justification",
+                key=comment_key(selected_institute, selected_fa.id, selected_domain.name, element.id),
+                placeholder=f"Feedback or justification for {subsection_number} {element.title}…",
+            )
 
     result = compute_sub_domain_element_score(selected_domain, declared_levels)
 
@@ -276,7 +256,20 @@ else:
             if level.standards_ref:
                 st.caption("**Key Standards References:** " + "; ".join(level.standards_ref))
 
+    st.text_area(
+        "Comment / justification",
+        key=comment_key(selected_institute, selected_fa.id, selected_domain.name, "_subdomain"),
+        placeholder="Feedback or justification for this sub-domain…",
+    )
+
     st.divider()
+
+# Autosave — silently persists every declared level/checkbox/comment typed on
+# this stage to saved/<institute>.yaml, merged over prior answers. This is
+# what makes switching stages safe: hydrate_from_saved() re-fills session_state
+# from this same file on the next rerun, so nothing typed is ever stranded.
+autosave_answers = {k: v for k, v in st.session_state.items() if str(k).startswith(f"{selected_institute}::")}
+sidebar_ui.autosave(selected_institute, assessor_name, autosave_answers)
 
 st.caption("See the **Overview** page in the sidebar for the live chain chart, dashboard table, and radar chart.")
 

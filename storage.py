@@ -16,6 +16,15 @@ redundant "{institute}::" prefix before writing (the file is already scoped
 to one institute) and restored on read, so the app's session_state keys don't
 need to change.
 
+On disk, each flat answer key is also shortened for readability: the full
+sub-domain name segment is swapped for a short slug (e.g. "Calibration and
+Traceability" -> "calibration_traceability") via a static lookup table, and
+the "declared_level" field is renamed to "level" (see `_shorten_key`/
+`_lengthen_key`). This is purely a display transform reversed on read --
+`st.session_state` and `SavedAssessment.answers` keep the full, original key
+shape. Unknown/unmapped names or fields pass through untouched, so this never
+loses data and pre-existing saves with full names still read back correctly.
+
 Every save also writes a per-assessor snapshot under `saved/history/
 <institute>/<assessor-slug>.yaml`, keyed by assessor name rather than a
 timestamp. This lets an assessor find their own last save for an institute
@@ -74,22 +83,69 @@ def _add_prefix(institute: str, answers: dict) -> dict:
     return {(k if k.startswith(prefix) else prefix + k): v for k, v in answers.items()}
 
 
+# Full sub-domain name -> short slug, for on-disk/export key readability only.
+# Static (not derived from the YAML content) since it must stay stable across
+# saves; update alongside fa1/fa2/fa3.yaml if a sub-domain is ever renamed.
+_SUBDOMAIN_SLUGS: dict[str, str] = {
+    "Calibration and Traceability": "calibration_traceability",
+    "Procurement": "procurement",
+    "Lifecycle Mgmt and Replacement": "lifecycle_mgmt_replacement",
+    "Sensor and Station Maintenance": "sensor_station_maintenance",
+    "Staff Competence and Training": "staff_competence_training",
+    "Data Processing": "data_processing",
+    "Quality Control": "quality_control",
+    "Expert Review & LTQM": "expert_review_ltqm",
+    "Performance Monitoring": "performance_monitoring",
+    "Site Management": "site_management",
+    "Metadata and Data Stewardship": "metadata_data_stewardship",
+    "Network Design and Lifecycle": "network_design_lifecycle",
+}
+_SUBDOMAIN_NAMES: dict[str, str] = {slug: name for name, slug in _SUBDOMAIN_SLUGS.items()}
+
+
+def _shorten_key(key: str) -> str:
+    """Shorten a flat, institute-stripped answer key for on-disk readability:
+    swap the sub-domain name for its short slug and rename the trailing
+    "declared_level" field to "level". Unmapped names/fields pass through
+    unchanged."""
+    parts = key.split("::")
+    if len(parts) >= 2 and parts[1] in _SUBDOMAIN_SLUGS:
+        parts[1] = _SUBDOMAIN_SLUGS[parts[1]]
+    if parts[-1] == "declared_level":
+        parts[-1] = "level"
+    return "::".join(parts)
+
+
+def _lengthen_key(key: str) -> str:
+    """Reverse of `_shorten_key`, applied on read so pre-existing saves using
+    the full sub-domain name / "declared_level" already still work."""
+    parts = key.split("::")
+    if len(parts) >= 2 and parts[1] in _SUBDOMAIN_NAMES:
+        parts[1] = _SUBDOMAIN_NAMES[parts[1]]
+    if parts[-1] == "level":
+        parts[-1] = "declared_level"
+    return "::".join(parts)
+
+
 def _to_doc(institute: str, assessor_name: str, saved_at: str, answers: dict) -> dict:
+    stripped = _strip_prefix(institute, answers)
     return {
         "institute": institute,
         "assessor_name": assessor_name,
         "saved_at": saved_at,
-        "answers": _strip_prefix(institute, answers),
+        "answers": {_shorten_key(k): v for k, v in stripped.items()},
     }
 
 
 def _from_doc(doc: dict) -> SavedAssessment:
     institute = doc["institute"]
+    raw_answers = doc.get("answers") or {}
+    lengthened = {_lengthen_key(k): v for k, v in raw_answers.items()}
     return SavedAssessment(
         institute=institute,
         assessor_name=doc["assessor_name"],
         saved_at=doc["saved_at"],
-        answers=_add_prefix(institute, doc.get("answers") or {}),
+        answers=_add_prefix(institute, lengthened),
     )
 
 
