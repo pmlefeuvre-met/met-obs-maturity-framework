@@ -10,8 +10,9 @@ class Institute:
 
 
 INSTITUTES: dict[str, Institute] = {
-    "MetNo": Institute(short="MetNo", long="Norwegian Meteorological Institute"),
-    "MetEireann": Institute(short="Met Éireann", long="The Irish Meteorological Service"),
-    "KNMI": Institute(short="KNMI", long="Royal Netherlands Meteorological Institute"),
     "UKMO": Institute(short="UK Met Office", long="The United Kingdom's National Meteorological Service"),
+    # Temporarily disabled to reduce complexity; re-add when ready.
+    # "MetNo": Institute(short="MetNo", long="Norwegian Meteorological Institute"),
+    # "MetEireann": Institute(short="Met Éireann", long="The Irish Meteorological Service"),
+    # "KNMI": Institute(short="KNMI", long="Royal Netherlands Meteorological Institute"),
 }
