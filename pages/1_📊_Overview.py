@@ -104,7 +104,7 @@ st.divider()
 st.markdown("## 📁 Saved Assessments")
 st.caption("One saved record per institute. Switch to the main page to save, load, or edit an assessment.")
 
-assessments = list_assessments()
+assessments = [a for a in list_assessments() if a.institute in INSTITUTES]
 
 if not assessments:
     st.info("No institute has saved an assessment yet.")
